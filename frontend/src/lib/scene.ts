@@ -37,12 +37,14 @@ async function loadTexture(url: string) {
 
 const textures = {
   [OBJS_TYPES.Boat]:        await loadTexture("/img/Sprite-0005.png"), // need the textures loaded prior to rendering
-  [OBJS_TYPES.Datacenter]:  await loadTexture("/img/Sprite-0005.png"),
-  [OBJS_TYPES.Forest]:      await loadTexture("/img/Sprite-0005.png"),
+  [OBJS_TYPES.Datacenter]:  await loadTexture("/img/datacenter.png"),
+  [OBJS_TYPES.Forest]:      await loadTexture("/img/trees.png"),
   [OBJS_TYPES.Port]:        await loadTexture("/img/Sprite-0005.png"),
   [OBJS_TYPES.Village]:     await loadTexture("/img/Sprite-0005.png"),
   [OBJS_TYPES.Rock]:        await loadTexture("/img/Sprite-0005.png"),
   [OBJS_TYPES.Fortress]:    await loadTexture("/img/castle-1.png"),
+  [OBJS_TYPES.Apartment]:   await loadTexture("/img/appartment.png"),
+  [OBJS_TYPES.PowerPlant]:   await loadTexture("/img/powerPlant.png"),
 }
 
 // MAP meshes
@@ -150,19 +152,40 @@ const render_island = (island:Island) => {
         if((objs[j].y*gridSize + objs[j].x) == i) {
           found = true;
           console.log("Will place obj at ", i, " in ", objs[j].type);
-          if(objs[j].type == OBJS_TYPES.Fortress)
+          if(objs[j].type == OBJS_TYPES.Fortress){
+            dummy.renderOrder = i;
             dummy.scale.set(2, 2, 1);
+          }
+          if(objs[j].type == OBJS_TYPES.Apartment || objs[j].type == OBJS_TYPES.PowerPlant
+             || objs[j].type == OBJS_TYPES.Datacenter
+          ){  
+            dummy.renderOrder = x;
+            dummy.scale.set(1.5,1.5,1);
+          }
           dummy.updateMatrix();
           objMeshes[objs[j].type].setMatrixAt(i, dummy.matrix);
+
+          if(objs[j].type == OBJS_TYPES.Forest) {
+            //let a = new THREE.Color().setHSL(0.3,0.5,0.5);
+            objMeshes[objs[j].type].setColorAt(i, (objs[j].color != null) ? objs[j].color! : new THREE.Color(norm(240), norm(139), norm(231)));
+          }
+
+
           //objMeshes[objs[j].type].setColorAt(i, new THREE.Color(0,1,0));
           //objMeshes[objs[j].type].instanceMatrix.needsUpdate = true;
           //objMeshes[objs[j].type].setColorAt(i, island.terrain_color[y][x]);
         }
       }
+      dummy.renderOrder = 0;
       dummy.scale.set(1, 1, 1);
       dummy.updateMatrix();
       terrainMesh.setMatrixAt(i, dummy.matrix);
-      terrainMesh.setColorAt(i, island.terrain_color[y][x]); 
+      terrainMesh.setColorAt(i, island.terrain_color[y][x]);
+      console.log(island.terrain_color[y][x].getHexString())
+      if(island.terrain_color[y][x].getHexString() == "cde0c7"){
+            objMeshes[OBJS_TYPES.Forest].setColorAt(i,new THREE.Color().setHex(0x7bb04b));
+            objMeshes[OBJS_TYPES.Forest].setMatrixAt(i, dummy.matrix);
+      }
       i++;
     }
   }
@@ -327,6 +350,7 @@ export const createScene = (el:HTMLCanvasElement) => {
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.NoToneMapping;
   renderer.setPixelRatio(window.devicePixelRatio);
+  renderer.sortObjects = false;
   //renderer.setSize(window.innerWidth, window.innerHeight);
 
   if(aside) el.setAttribute('style', 'float: right;');

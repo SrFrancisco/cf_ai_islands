@@ -17,7 +17,14 @@ export class Island {
         this.terrain = Array.from({ length: this.imageSize }, () => new Array(this.imageSize));
         this.terrain_color = Array.from({ length: this.imageSize }, () => new Array(this.imageSize));
         this.terrain_LLM = Array.from({ length: this.imageSize }, () => new Array(this.imageSize));
-
+        this.objs = [{type: OBJS_TYPES.Fortress, x: 10, y:13},
+            {type: OBJS_TYPES.Apartment, x: 12, y:13},
+            {type: OBJS_TYPES.Apartment, x: 13, y:13},
+            //{type: OBJS_TYPES.Apartment, x: 12, y:14},
+            {type: OBJS_TYPES.Forest, x: 20, y:13}, //color: new Color(1,0,0)},
+            {type: OBJS_TYPES.PowerPlant, x: 15, y: 20},
+            {type: OBJS_TYPES.Datacenter, x: 20, y: 20},
+        ];
     }
 
     /**
@@ -122,7 +129,9 @@ export enum OBJS_TYPES {
     Boat,
     Village,
     Datacenter,
-    Fortress
+    Fortress,
+    Apartment,
+    PowerPlant
 }
 
 
