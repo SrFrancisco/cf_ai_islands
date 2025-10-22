@@ -9,6 +9,7 @@ export class Island {
     imageSize: number;
     terrain_color: Array<Array<Color>>;
     terrain_LLM: Array<Array<Number>>;
+    objs: Array<DecoratedObj>;
 
     constructor(size:number)
     {
@@ -120,7 +121,8 @@ export enum OBJS_TYPES {
     Port,
     Boat,
     Village,
-    Datacenter
+    Datacenter,
+    Fortress
 }
 
 
@@ -128,6 +130,6 @@ export interface DecoratedObj {
     type: OBJS_TYPES; 
     x: number;
     y: number;
-    color: Color; /** NOTE: only applicable to OBJS that support it */
+    color?: Color; /** NOTE: only applicable to OBJS that support it */
 }
 

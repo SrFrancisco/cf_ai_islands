@@ -1,6 +1,5 @@
 import { Island, OBJS_TYPES, type DecoratedObj } from './island';
 import * as THREE from 'three'
-import { error } from '@sveltejs/kit';
 
 // CONFIGURATION -------------------
 //const gridSize = 200;      // number of pixels in X and Y
@@ -16,22 +15,46 @@ const asideRatio = 1.6;
 
 const count = gridSize * gridSize;
 // ---------------------------------
+const norm = (col:number) => {return col / 255};
 
+// Textures
 const loader = new THREE.TextureLoader();
-const textures = {
-  [OBJS_TYPES.Boat]: loader.load("/img/house.png"),
-  [OBJS_TYPES.Datacenter]: loader.load("/img/house.png"),
-  [OBJS_TYPES.Forest]: loader.load("/img/house.png"),
-  [OBJS_TYPES.Port]: loader.load("/img/house.png"),
-  [OBJS_TYPES.Village]: loader.load("/img/house.png"),
-  [OBJS_TYPES.Rock]: loader.load("/img/house.png"),
+
+async function loadTexture(url: string) {
+  const tex = await loader.loadAsync(url);
+
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.generateMipmaps = false;
+  tex.minFilter = THREE.NearestFilter;
+  tex.magFilter = THREE.NearestFilter;
+  tex.wrapS = tex.wrapT = THREE.ClampToEdgeWrapping;
+  tex.premultiplyAlpha = false;
+  tex.needsUpdate = true;
+
+  return tex;
 }
 
-let island = new Island(gridSize);
-island.generateBaseTerrain(10,10);
 
+const textures = {
+  [OBJS_TYPES.Boat]:        await loadTexture("/img/Sprite-0005.png"), // need the textures loaded prior to rendering
+  [OBJS_TYPES.Datacenter]:  await loadTexture("/img/Sprite-0005.png"),
+  [OBJS_TYPES.Forest]:      await loadTexture("/img/Sprite-0005.png"),
+  [OBJS_TYPES.Port]:        await loadTexture("/img/Sprite-0005.png"),
+  [OBJS_TYPES.Village]:     await loadTexture("/img/Sprite-0005.png"),
+  [OBJS_TYPES.Rock]:        await loadTexture("/img/Sprite-0005.png"),
+  [OBJS_TYPES.Fortress]:    await loadTexture("/img/castle-1.png"),
+}
+
+// MAP meshes
+let objMeshes = {} as Record<OBJS_TYPES,THREE.InstancedMesh>;
+let terrainMesh:THREE.InstancedMesh;
+
+
+// ---------------------------
+//  Camera setup and render
+// ---------------------------
+let renderer:THREE.WebGLRenderer;
 const scene = new THREE.Scene();
-const norm = (col:number) => {return col / 255};
 scene.background = new THREE.Color(norm(19), norm(62), norm(135));
 
 //REF: https://discourse.threejs.org/t/orthographic-camera-with-limits/49353/3
@@ -46,6 +69,11 @@ const camera = new THREE.OrthographicCamera(
   100
 )
 camera.position.set(0, 0, 1)
+
+
+// ---------------------------
+//  Main rendering functions
+// ---------------------------
 
 const render_island_pixels = (colors:Array<Array<THREE.Color>>) => {
   // Precondition: colors array must have the 
@@ -81,8 +109,76 @@ const render_island_pixels = (colors:Array<Array<THREE.Color>>) => {
     mesh.instanceColor.needsUpdate = true;
   }
 }
-const render_island = (colors:Array<Array<THREE.Color>>) => {
-  // === HELPER: CREATE HEX GEOMETRY ===
+
+
+const render_island = (island:Island) => {
+  const radius = pixelSize / 2;
+  const dummy = new THREE.Object3D();
+  const far = new THREE.Object3D();
+  far.position.set(0,0,-2);
+  far.updateMatrix();
+  const xOffset = Math.sqrt(3) * radius; // horizontal spacing between centers
+  const yOffset = 1.5 * radius;          // vertical spacing between centers
+  let i = 0;
+
+  for (let y = 0; y < gridSize; y++) {
+    for (let x = 0; x < gridSize; x++) {
+      // center the whole grid around origin
+      const xCenterOffset = (gridSize - 1) * xOffset / 2;
+      const yCenterOffset = (gridSize - 1) * yOffset / 2;
+
+      const xPos = x * xOffset - xCenterOffset + (y % 2 === 1 ? xOffset / 2 : 0);
+      const yPos = y * yOffset - yCenterOffset;
+
+      
+
+      dummy.position.set(xPos, yPos, 0);
+      //dummy.rotation.set(0, 0, 0.5222);
+      dummy.rotation.set(0, 0, 0);
+
+      dummy.updateMatrix();
+
+      //TODO: O^4 need to optimize this
+      let found = false;
+      const objs = island.objs;
+      for (const [_, value] of Object.entries(objMeshes)){
+        value.setMatrixAt(i, far.matrix);
+        value.instanceMatrix.needsUpdate = true
+      }
+
+      for(let j = 0; j < objs.length; j++) {
+        if((objs[j].y*gridSize + objs[j].x) == i) {
+          found = true;
+          console.log("Will place obj at ", i, " in ", objs[j].type);
+          if(objs[j].type == OBJS_TYPES.Fortress)
+            dummy.scale.set(2, 2, 1);
+          dummy.updateMatrix();
+          objMeshes[objs[j].type].setMatrixAt(i, dummy.matrix);
+          //objMeshes[objs[j].type].setColorAt(i, new THREE.Color(0,1,0));
+          //objMeshes[objs[j].type].instanceMatrix.needsUpdate = true;
+          //objMeshes[objs[j].type].setColorAt(i, island.terrain_color[y][x]);
+        }
+      }
+      dummy.scale.set(1, 1, 1);
+      dummy.updateMatrix();
+      terrainMesh.setMatrixAt(i, dummy.matrix);
+      terrainMesh.setColorAt(i, island.terrain_color[y][x]); 
+      i++;
+    }
+  }
+
+  if (terrainMesh.instanceColor) terrainMesh.instanceColor.needsUpdate = true;
+  for (const [_, value] of Object.entries(objMeshes))
+    if (value.instanceColor) value.instanceColor.needsUpdate = true;
+  console.log("DONE")
+};
+
+/**
+ * THIS FUNCTION SHOULD ONLY BE RUN ONCE. (it adds the meshes to the scene)
+ * @param Island 
+ * @returns 
+ */
+const setup_island = (island:Island) => {
   function createPointyHexGeometry(r = 1) {
     const shape = new THREE.Shape();
     for (let i = 0; i < 6; i++) {
@@ -98,43 +194,43 @@ const render_island = (colors:Array<Array<THREE.Color>>) => {
 
   const radius = pixelSize / 2;
   const geometry = createPointyHexGeometry(radius);
+  geometry.rotateZ(Math.PI / 6);
+
   
-  const material = new THREE.MeshBasicMaterial({ vertexColors: false, side: THREE.DoubleSide });
-  const mesh = new THREE.InstancedMesh(geometry, material, count);
-  scene.add(mesh);
+  Object.keys(textures).forEach((key:string) => {
+    //const textVal:OBJS_TYPES = +key;
+    const textVal = Number(key) as OBJS_TYPES;
+    const material = new THREE.MeshBasicMaterial({
+      map: textures[textVal],
+      side: THREE.DoubleSide,
+      transparent: true,
+      toneMapped: false
+    });
+    material.map!.repeat.set(0.3, 0.3);
+    material.map!.wrapS = material.map!.wrapT = THREE.RepeatWrapping;
+    material.map!.center.set(0.5, 0.65);
+    material.map!.rotation = -Math.PI / 6; // keep upright
+    let objs_count = 0;
+    island.objs.forEach((elem) => {
+      if(elem.type == textVal) objs_count++;
+    })
+    
 
-  const dummy = new THREE.Object3D();
-  const xOffset = Math.sqrt(3) * radius; // horizontal spacing between centers
-  const yOffset = 1.5 * radius;          // vertical spacing between centers
-  let i = 0;
+    console.log("TEXTURE ",key,objs_count)
+    objMeshes[textVal] = new THREE.InstancedMesh(geometry,material,count);
+    //instanceMeshes[textVal].translateX(-((gridSize+1)*(pixelSize/2)));
+    scene.add(objMeshes[textVal]);
+  });
+  const material = new THREE.MeshBasicMaterial({ vertexColors: false, side: THREE.DoubleSide, transparent: false,  toneMapped: false });
+  terrainMesh = new THREE.InstancedMesh(geometry, material, count);
+  scene.add(terrainMesh);
 
-  for (let y = 0; y < gridSize; y++) {
-    for (let x = 0; x < gridSize; x++) {
-      // center the whole grid around origin
-      const xCenterOffset = (gridSize - 1) * xOffset / 2;
-      const yCenterOffset = (gridSize - 1) * yOffset / 2;
-
-      const xPos = x * xOffset - xCenterOffset + (y % 2 === 1 ? xOffset / 2 : 0);
-      const yPos = y * yOffset - yCenterOffset;
-
-      dummy.position.set(xPos, yPos, 0);
-      dummy.rotation.set(0, 0, 0.5222);
-
-      dummy.updateMatrix();
-      mesh.setMatrixAt(i, dummy.matrix);
-      mesh.setColorAt(i, colors[y][x]);
-      i++;
-    }
-  }
-
-  if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
-
-  return mesh;
+  render_island(island);
 };
 
-
-const mesh = render_island(island.terrain_color);
-
+let island = new Island(gridSize);
+island.generateBaseTerrain(10,10);
+setup_island(island);
 
 //const geometry = new THREE.PlaneGeometry(pixelSize,pixelSize);
 //let mesh = new THREE.InstancedMesh(geometry, new THREE.MeshBasicMaterial({color: 0xffffff , vertexColors: false}), count);
@@ -158,13 +254,25 @@ const mesh = render_island(island.terrain_color);
 //	mesh.instanceColor.needsUpdate = true;
 //}
 
-const placeObjs = (objs:Array<DecoratedObj>) => {
-  objs.forEach((element:DecoratedObj) => {
-    //TODO: InstaceMesh for tile type ?
-  })
-}
+//const placeObjs = (objs:Array<DecoratedObj>) => {
+//  objs.forEach((element:DecoratedObj) => {
+//    //REF: https://github.com/mrdoob/three.js/issues/22102#issuecomment-1207288786
+//    const emptyMatrix = new THREE.Matrix4();
+//    const baseMatrix = new THREE.Matrix4();
+//    let i = element.y*gridSize + element.x;
+//    mesh.getMatrixAt(i,baseMatrix);
+//    mesh.setMatrixAt(i, emptyMatrix); // set base matrix to zero
+//    instanceMeshes[element.type].setMatrixAt(i,baseMatrix);
+//    instanceMeshes[element.type].setColorAt(i,new THREE.Color(Math.random(),Math.random(),Math.random()));
+//
+//    mesh.instanceMatrix.needsUpdate = true;
+//    instanceMeshes[element.type].instanceMatrix.needsUpdate = true;
+//  })
+//}
 
-let renderer:THREE.WebGLRenderer;
+//placeObjs([{type: OBJS_TYPES.Datacenter, x: 10, y:10}]);
+
+
 
 const update = () => {
   //for(let i = 0; i < gridSize*gridSize; i++){
@@ -181,6 +289,11 @@ const animate = () => {
 	//requestAnimationFrame(animate);
   //update();
   //mesh.rotation.z += 0.002;
+  //Object.keys(textures).forEach((key:string) => {
+  //  //const textVal:OBJS_TYPES = +key;
+  //  const textVal = Number(key) as OBJS_TYPES;
+  //  renderer.initTexture(textures[textVal]);
+  //});
 	renderer.render(scene, camera);
 };
 
@@ -211,6 +324,11 @@ const resize = () => {
 
 export const createScene = (el:HTMLCanvasElement) => {
 	renderer = new THREE.WebGLRenderer({ antialias: false, canvas: el });
+  renderer.outputColorSpace = THREE.SRGBColorSpace;
+  renderer.toneMapping = THREE.NoToneMapping;
+  renderer.setPixelRatio(window.devicePixelRatio);
+  //renderer.setSize(window.innerWidth, window.innerHeight);
+
   if(aside) el.setAttribute('style', 'float: right;');
 	resize();
 	animate();
@@ -219,7 +337,7 @@ export const createScene = (el:HTMLCanvasElement) => {
 export const new_island = () => {
   island = new Island(gridSize);
   island.generateBaseTerrain(10,10);
-  render_island(island.terrain_color);
+  render_island(island);
   animate();
 }
 
