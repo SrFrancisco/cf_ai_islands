@@ -1,0 +1,17 @@
+{
+	"name": "@project/common",
+	"private": false,
+	"version": "0.0.1",
+	"exports": {
+		".":{
+			"types": "./islands.ts",
+			"import": "./islands.ts",
+			"default": "./islands.ts"
+		},
+		"./api":{
+			"types": "./api.ts",
+			"import": "./api.ts",
+			"default": "./api.ts"
+		}
+	}
+}

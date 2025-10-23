@@ -1,0 +1,9 @@
+{
+    "name":"cf_ai_islands_monorepo",
+    "private": true,
+    "workspaces":[
+        "./frontend",
+        "./workflow",
+        "./common"
+    ]
+}

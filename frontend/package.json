@@ -1,5 +1,5 @@
 {
-	"name": "frontend",
+	"name": "@project/frontend",
 	"private": true,
 	"version": "0.0.1",
 	"type": "module",
@@ -22,13 +22,15 @@
 		"svelte-check": "^4.3.2",
 		"typescript": "^5.9.2",
 		"vite": "^7.1.7",
-		"wrangler": "^4.43.0"
+		"wrangler": "^4.44.0"
 	},
 	"dependencies": {
 		"@popperjs/core": "^2.11.8",
+		"@project/common": "file:../common",
 		"@tailwindcss/vite": "^4.1.15",
 		"@threlte/core": "^7.3.2",
 		"@types/three": "^0.180.0",
+		"agents": "^0.2.14",
 		"bootstrap": "^5.3.8",
 		"tailwindcss": "^4.1.15",
 		"three": "^0.180.0"

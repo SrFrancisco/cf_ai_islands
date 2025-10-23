@@ -1,0 +1,14 @@
+{
+  "files": [],
+  "references": [
+    {
+      "path": "./frontend"
+    },
+    {
+      "path": "./common"
+    },
+    {
+      "path": "./workflow"
+    }
+  ]
+}
