@@ -12,7 +12,6 @@
 	import { createScene, new_island } from '$lib/scene';
 	import type { PageProps } from './$types';
 	import { goto } from '$app/navigation';
-    import { Island } from '$lib/island';
 
 	let { data }: PageProps = $props();
 	if(data.island_data == null)

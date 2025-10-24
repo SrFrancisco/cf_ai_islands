@@ -1,4 +1,4 @@
-import { Island, OBJS_TYPES, type DecoratedObj } from './island';
+import { Island, OBJS_TYPES, type rgb, type DecoratedObj } from '@project/common';
 import * as THREE from 'three'
 
 // CONFIGURATION -------------------
@@ -112,6 +112,7 @@ const render_island_pixels = (colors:Array<Array<THREE.Color>>) => {
   }
 }
 
+const rgbToColor = (col:rgb) => new THREE.Color().setRGB(col.r/255, col.g/255, col.b/255);
 
 const render_island = (island:Island) => {
   const radius = pixelSize / 2;
@@ -122,6 +123,9 @@ const render_island = (island:Island) => {
   const xOffset = Math.sqrt(3) * radius; // horizontal spacing between centers
   const yOffset = 1.5 * radius;          // vertical spacing between centers
   let i = 0;
+
+  let terrain_color = island.getBaseTerrain();
+
 
   for (let y = 0; y < gridSize; y++) {
     for (let x = 0; x < gridSize; x++) {
@@ -142,7 +146,7 @@ const render_island = (island:Island) => {
 
       //TODO: O^4 need to optimize this
       let found = false;
-      const objs = island.objs;
+      const objs = island._decorations;
       for (const [_, value] of Object.entries(objMeshes)){
         value.setMatrixAt(i, far.matrix);
         value.instanceMatrix.needsUpdate = true
@@ -167,7 +171,7 @@ const render_island = (island:Island) => {
 
           if(objs[j].type == OBJS_TYPES.Forest) {
             //let a = new THREE.Color().setHSL(0.3,0.5,0.5);
-            objMeshes[objs[j].type].setColorAt(i, (objs[j].color != null) ? objs[j].color! : new THREE.Color(norm(240), norm(139), norm(231)));
+            objMeshes[objs[j].type].setColorAt(i, (objs[j].color != null) ? rgbToColor(objs[j].color!) : new THREE.Color(norm(240), norm(139), norm(231)));
           }
 
 
@@ -180,9 +184,9 @@ const render_island = (island:Island) => {
       dummy.scale.set(1, 1, 1);
       dummy.updateMatrix();
       terrainMesh.setMatrixAt(i, dummy.matrix);
-      terrainMesh.setColorAt(i, island.terrain_color[y][x]);
-      console.log(island.terrain_color[y][x].getHexString())
-      if(island.terrain_color[y][x].getHexString() == "cde0c7"){
+      terrainMesh.setColorAt(i, rgbToColor(terrain_color[y][x]));
+      //console.log(island.terrain_color[y][x].getHexString())
+      if(rgbToColor(terrain_color[y][x]).getHexString() == "cde0c7"){
             objMeshes[OBJS_TYPES.Forest].setColorAt(i,new THREE.Color().setHex(0x7bb04b));
             objMeshes[OBJS_TYPES.Forest].setMatrixAt(i, dummy.matrix);
       }
@@ -233,13 +237,6 @@ const setup_island = (island:Island) => {
     material.map!.wrapS = material.map!.wrapT = THREE.RepeatWrapping;
     material.map!.center.set(0.5, 0.65);
     material.map!.rotation = -Math.PI / 6; // keep upright
-    let objs_count = 0;
-    island.objs.forEach((elem) => {
-      if(elem.type == textVal) objs_count++;
-    })
-    
-
-    console.log("TEXTURE ",key,objs_count)
     objMeshes[textVal] = new THREE.InstancedMesh(geometry,material,count);
     //instanceMeshes[textVal].translateX(-((gridSize+1)*(pixelSize/2)));
     scene.add(objMeshes[textVal]);
@@ -251,9 +248,7 @@ const setup_island = (island:Island) => {
   render_island(island);
 };
 
-let island = new Island(gridSize);
-island.generateBaseTerrain(10,10);
-setup_island(island);
+let island:Island;
 
 //const geometry = new THREE.PlaneGeometry(pixelSize,pixelSize);
 //let mesh = new THREE.InstancedMesh(geometry, new THREE.MeshBasicMaterial({color: 0xffffff , vertexColors: false}), count);
@@ -336,7 +331,7 @@ const resize = () => {
         camera.top = (frustumSize / aspect) / 2;
         camera.bottom = -(frustumSize / aspect) / 2;
     }
-
+    renderer.setPixelRatio(window.devicePixelRatio);
     camera.updateProjectionMatrix();
     if(!aside || window.innerWidth < 600)
       renderer.setSize(window.innerWidth, window.innerHeight);
@@ -353,6 +348,10 @@ export const createScene = (el:HTMLCanvasElement) => {
   renderer.sortObjects = false;
   //renderer.setSize(window.innerWidth, window.innerHeight);
 
+  island = new Island(gridSize);
+  island.generateBaseTerrain();
+  setup_island(island);
+
   if(aside) el.setAttribute('style', 'float: right;');
 	resize();
 	animate();
@@ -360,7 +359,7 @@ export const createScene = (el:HTMLCanvasElement) => {
 
 export const new_island = () => {
   island = new Island(gridSize);
-  island.generateBaseTerrain(10,10);
+  island.generateBaseTerrain();
   render_island(island);
   animate();
 }
