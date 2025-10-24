@@ -10,9 +10,22 @@
     // this code is based on the Svelte+Three.js scaffold (https://github.com/jasonsturges/threejs-sveltekit)
     import { onMount } from 'svelte';
 	import { createScene, new_island } from '$lib/scene';
+	import type { PageProps } from './$types';
+	import { goto } from '$app/navigation';
+    import { Island } from '$lib/island';
+
+	let { data }: PageProps = $props();
+	if(data.island_data == null)
+	{
+		alert("There was an error retrieving the data! Check if database is operational or that the island exists.");
+		goto("/");
+	}
+
+	console.log(data);
+	
+
 
 	let el:HTMLCanvasElement;
-
 	onMount(() => {
 		createScene(el);
 	});

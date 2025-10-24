@@ -1,4 +1,5 @@
 {
+	"references": [{"path": "../../common"}],
   "compilerOptions": {
     "target": "esnext",
     "module": "esnext",
