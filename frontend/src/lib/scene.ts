@@ -364,5 +364,12 @@ export const new_island = () => {
   animate();
 }
 
+export const new_island_map = (topo:Array<Array<number>>, objs:Array<DecoratedObj>) => {
+  island = new Island(gridSize,topo,objs);
+  island.generateBaseTerrain();
+  render_island(island);
+  animate();
+}
+
 window.addEventListener('resize', resize);
 

@@ -2,6 +2,7 @@
 	"compilerOptions": {
 		"composite": true,
 		"declaration": true,
+		"emitDeclarationOnly": true,
 		"allowJs": true,
 		"checkJs": true,
 	}

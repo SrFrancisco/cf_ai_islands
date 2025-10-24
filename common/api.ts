@@ -1,3 +1,5 @@
+import { DecoratedObj } from "./islands";
+
 export type InferenceReqPayload = {
     island_uuid: string,
     map: Array<Array<number>>,
@@ -10,3 +12,13 @@ export type islandsRow = {
     island_decorations: string // TEXT
     "COUNT(*)":number
 };
+
+export type inferenceRequest = {
+    island_name: string,
+    prompt: Array<string>,
+}
+
+export type inferenceResponse = {
+    map:Array<Array<number>>,
+    objs:Array<DecoratedObj>
+}
