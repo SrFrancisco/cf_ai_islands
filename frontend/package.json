@@ -32,6 +32,7 @@
 		"@types/three": "^0.180.0",
 		"agents": "^0.2.14",
 		"bootstrap": "^5.3.8",
+		"bootstrap-icons": "^1.13.1",
 		"tailwindcss": "^4.1.15",
 		"three": "^0.180.0"
 	}

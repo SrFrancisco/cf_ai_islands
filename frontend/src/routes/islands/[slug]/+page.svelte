@@ -118,15 +118,16 @@
 <div id="container" style="display: flex; justify-content: space-between; flex-flow: row wrap; {chat_mode ? "align-items: flex-end;" : undefined}">
 <div style="flex: 1; padding: 15px; {!edit_mode ? 'align-content: center;' : undefined}">
 	{#if edit_mode}
-		{#if !chat_mode}
-			<div style="display: flex; justify-content: space-between; align-items: baseline;">
-				<div>
-					<h1 style="margin: 0;">Island {data.slug}</h1>
-				</div>
+		<div style="display: flex; justify-content: space-between; align-items: center;">
+			<div>
+				<h1 style="margin: 0;">Island {data.slug}</h1>
 			</div>
-			<hr>
+			<a href="/" class="btn btn-primary" aria-label="home"><i class="bi bi-house-door-fill"></i></a>
+		</div>
+		<hr>
+		{#if !chat_mode}
 			<div style="margin-bottom: 20px;">
-				<h3>Island Topology</h3>
+				<!--<h3>Island Topology</h3>
 				<p>You can use the button below to generate a new terrain for the island. AI can also do it for you if you enable the option.</p>
 				<div class="form-check form-switch" style="margin-bottom: 10px;">
 					<input class="form-check-input" type="checkbox" role="switch" id="switchCheckDefault" onchange={() => {ai_topology = !ai_topology;}} checked>
@@ -136,10 +137,10 @@
 					<button type="button" class="btn btn-primary" disabled>New Topology (random)</button>
 				{:else}
 					<button type="button" class="btn btn-primary" onclick={new_island}>New Topology (random)</button>
-				{/if}
+				{/if}-->
 			</div>
 			<h3>AI-Assisted Decoration</h3>
-			<p>An LLM can decorate the map for you, for this fill the box above with the details.
+			<p>Enter your desired map changes in the box above for the LLM to modify it.
 			</p>
 			<b>Elements that the LLM can include:</b>
 			<ul>
