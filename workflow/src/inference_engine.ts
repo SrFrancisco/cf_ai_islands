@@ -52,12 +52,13 @@ to generate the terrain with various parameters and a sphere linearly interpolat
 - nulFact_1,nulFact_2,nulFact_4,nulFact_8,nulFact_16,nulFact_32: different frequencies that are summed and averaged, increasing the value for higher frequencies (32) results in mountainous spikes while for lower changes the base terrain. (these values should range 0-1 and their sum must be 1).
 - lerp_factor: multiplying parameter of the linear interpolation, that is, how aggressive the sphere will trim the island. The higher the value, the more round and symetrical the island wil be. MUST only vary between 0.5 and 0.65.
 - lerp_sphere: Higher lerp_sphere results in a lower island size. Value should be between 0.1  and 0.7
-- threshold_snow,threshold_mountain,threshold_plain,threshold_sand,threshold_water,threshold_deep_water: all the noise thresholds that determine what elevation is considered for that element, it starts with snow. If you want a bigger region you just need to increase the gap between the element and their previous elements. Likewise, a smaller region is when the gap between them is minimal. 
+- threshold_snow,threshold_mountain,threshold_plain,threshold_sand,threshold_water,threshold_deep_water: all the noise thresholds that determine what elevation is considered for that element, it starts with snow. If you want a bigger region you just need to increase the gap between the element and their previous elements. Likewise, a smaller region is when the gap between them is minimal.
+- percentage_trees: the higher the value, the more trees the island will have. Value should be between 0 and 1
 
 Write **ONLY** the numeric values for each of the parameters. The output must be JSON and should only contain THESE aforementioned parameters. The format is the following '{ "parameters": { "frequency": VALUE, ... }}' Do not add any other text or offer any explanation or description. Even if the value is zero, write it in the JSON. DO NOT USE NEW-LINE IN JSON!
 
 These are the sane-defaults for a medium island, attempt to vary around these values:
-{"parameters": {"frequency": 5, "pow": 1.3, "nulFact_1": 0.82, "nulFact_2": 0.43, "nulFact_4": 0.25, "nulFact_8": 0.38, "nulFact_16": 0.14, "nulFact_32": 0.5, "lerp_factor": 0.5, "lerp_sphere": 0.3, "threshold_deep_water": 1, "threshold_water": 0.65, "threshold_sand": 0.55, "threshold_plain": 0.5, "threshold_mountain": 0.35, "threshold_snow": 0.2}}
+{"parameters": {"frequency": 5, "pow": 1.3, "nulFact_1": 0.82, "nulFact_2": 0.43, "nulFact_4": 0.25, "nulFact_8": 0.38, "nulFact_16": 0.14, "nulFact_32": 0.5, "lerp_factor": 0.5, "lerp_sphere": 0.3, "threshold_deep_water": 1, "threshold_water": 0.65, "threshold_sand": 0.55, "threshold_plain": 0.5, "threshold_mountain": 0.35, "threshold_snow": 0.2, "percentage_trees": 0.5}}
 `,
     MAX_TOKENS: 512 as const
 };

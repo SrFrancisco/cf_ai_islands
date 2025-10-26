@@ -7,7 +7,8 @@ export enum OBJS_TYPES {
     Datacenter,
     Fortress,
     Apartment,
-    PowerPlant
+    PowerPlant,
+    Mountain
 }
 
 export interface rgb {
@@ -32,7 +33,7 @@ const lerp = (x:number, y:number, a:number):number =>  a * (y - x) + x;
 const DEFAULT_PALETTE:Array<rgb> = [
     {r: 255, g: 255, b: 255},
     {r: 209, g: 209, b: 209},
-    {r: 155, g: 191, b: 145},
+    {r:143, g:204, b:88}, //{r: 155, g: 191, b: 145}, 
     {r: 240, g: 242, b: 160},
     {r: 32, g: 97, b: 140},
     {r: 19, g: 62, b: 135}
@@ -54,7 +55,8 @@ export type ISLAND_PROFILE = {
     threshold_sand:number,
     threshold_plain:number,
     threshold_mountain:number,
-    threshold_snow:number
+    threshold_snow:number,
+    percentage_trees:number
 };
 
 // {"parameters": {"frequency": 3, "pow": 1.1, "nulFact_1": 0.45, "nulFact_2": 0.22, "nulFact_4": 0.15, "nulFact_8": 0.31, "nulFact_16": 0.1, "nulFact_32": 0.45, "lerp_factor": 0.55, "lerp_sphere": 0.4, "threshold_deep_water": 1, "threshold_water": 0.6, "threshold_sand": 0.7, "threshold_plain": 0.45, "threshold_mountain": 0.25, "threshold_snow": 0.15}}
@@ -78,6 +80,7 @@ export function is_valid_profile(obj: any): obj is ISLAND_PROFILE {
         &&  typeof obj.threshold_plain === "number"
         &&  typeof obj.threshold_mountain === "number"
         &&  typeof obj.threshold_snow === "number"
+        &&  typeof obj.percentage_trees === "number"
     );
 }
 
@@ -97,7 +100,8 @@ export const DEFAULT_PROFILE:ISLAND_PROFILE = {
     threshold_sand       : 0.55,
     threshold_plain      : 0.5,
     threshold_mountain   : 0.35,
-    threshold_snow       : 0.2
+    threshold_snow       : 0.2,
+    percentage_trees     : 0.5
 }
 
 //let p = JSON.parse('{"parameters": {"frequency": 5, "pow": 1.3, "nulFact_1": 0.6, "nulFact_2": 0.3, "nulFact_4": 0.01, "nulFact_8": 0.4, "nulFact_16": 0.05, "nulFact_32": 0.2, "lerp_factor": 0.5, "lerp_sphere": 0.3, "threshold_deep_water": 0.05, "threshold_water": 0.1, "threshold_sand": 0.05, "threshold_plain": 0.45, "threshold_mountain": 0.45, "threshold_snow": 0.05}}');
@@ -159,6 +163,16 @@ export class Island {
                 base_terrain = lerp(base_terrain,d,profile.lerp_factor);
 
                 this._terrain[y][x] = base_terrain;
+
+                if(base_terrain < profile.threshold_plain && base_terrain >= profile.threshold_mountain)
+                {
+                    // we will calculate tree distribution
+                    nx = (start_pos_x+ x/this._imageSize - 0.5) * 7; 
+                    ny = (start_pos_y+ y/this._imageSize - 0.5) * 7;
+                    e = (this.noise.simplex2(1 * nx, 1 * ny)/2) + 0.5;
+                    if(e >= (1-profile.percentage_trees))
+                        this._decorations.push({type:OBJS_TYPES.Forest,x:x,y:y});
+                }
             }
         }
     }

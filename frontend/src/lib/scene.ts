@@ -45,6 +45,7 @@ const textures = {
   [OBJS_TYPES.Fortress]:    await loadTexture("/img/castle-1.png"),
   [OBJS_TYPES.Apartment]:   await loadTexture("/img/appartment.png"),
   [OBJS_TYPES.PowerPlant]:   await loadTexture("/img/powerPlant.png"),
+  [OBJS_TYPES.Mountain]:    await loadTexture("/img/mountain.png")
 }
 
 // MAP meshes
@@ -136,7 +137,7 @@ const render_island = (island:Island) => {
       const xPos = x * xOffset - xCenterOffset + (y % 2 === 1 ? xOffset / 2 : 0);
       const yPos = y * yOffset - yCenterOffset;
 
-      
+      let color_override:null|THREE.Color = null;
 
       dummy.position.set(xPos, yPos, 0);
       //dummy.rotation.set(0, 0, 0.5222);
@@ -171,7 +172,13 @@ const render_island = (island:Island) => {
 
           if(objs[j].type == OBJS_TYPES.Forest) {
             //let a = new THREE.Color().setHSL(0.3,0.5,0.5);
-            objMeshes[objs[j].type].setColorAt(i, (objs[j].color != null) ? rgbToColor(objs[j].color!) : new THREE.Color(norm(240), norm(139), norm(231)));
+            dummy.scale.set(1,1,1);
+            //const tile_color = (objs[j].color != null) ? rgbToColor(objs[j].color!) : new THREE.Color(norm(240), norm(139), norm(231));
+            const tile_color = (objs[j].color != null) ? rgbToColor(objs[j].color!) : new THREE.Color().setHex(0x7bb04b);
+            objMeshes[objs[j].type].setColorAt(i, tile_color);
+            //objMeshes[OBJS_TYPES.Forest].setColorAt(i,new THREE.Color().setHex(0x7bb04b));
+            objMeshes[OBJS_TYPES.Forest].setMatrixAt(i, dummy.matrix);
+            color_override=tile_color.offsetHSL(0.0,0.0,0.1);
           }
 
 
@@ -184,11 +191,19 @@ const render_island = (island:Island) => {
       dummy.scale.set(1, 1, 1);
       dummy.updateMatrix();
       terrainMesh.setMatrixAt(i, dummy.matrix);
-      terrainMesh.setColorAt(i, rgbToColor(terrain_color[y][x]));
+      if(color_override == null)
+        terrainMesh.setColorAt(i, rgbToColor(terrain_color[y][x]));
+      else {
+        terrainMesh.setColorAt(i, color_override);
+        color_override = null;
+      }
+      //if(rgbToColor(terrain_color[y][x]) == rgbToColor({r: 155, g: 191, b: 145}))
+      //  objMeshes[OBJS_TYPES.Forest].setMatrixAt(i, dummy.matrix);
       //console.log(island.terrain_color[y][x].getHexString())
-      if(rgbToColor(terrain_color[y][x]).getHexString() == "cde0c7"){
-            objMeshes[OBJS_TYPES.Forest].setColorAt(i,new THREE.Color().setHex(0x7bb04b));
-            objMeshes[OBJS_TYPES.Forest].setMatrixAt(i, dummy.matrix);
+      if(rgbToColor(terrain_color[y][x]).getHexString() == rgbToColor({r: 209, g: 209, b: 209}).getHexString()
+        || rgbToColor(terrain_color[y][x]).getHexString() == 'ffffff'){
+            //objMeshes[OBJS_TYPES.Mountain].setColorAt(i,new THREE.Color().setHex(0x7bb04b));
+            objMeshes[OBJS_TYPES.Mountain].setMatrixAt(i, dummy.matrix);
       }
       i++;
     }
