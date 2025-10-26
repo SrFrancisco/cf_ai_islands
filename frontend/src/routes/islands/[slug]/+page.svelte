@@ -115,16 +115,19 @@
 	}
 </script>
 
-<div id="container" style="display: flex; justify-content: space-between; flex-flow: row wrap; {chat_mode ? "align-items: flex-end;" : undefined}">
-<div style="flex: 1; padding: 15px; {!edit_mode ? 'align-content: center;' : undefined}">
+<div id="container" style="display: flex; justify-content: space-between; flex-flow: row wrap;">
+<div style="flex: 1; padding: 15px; display: flex; flex-direction: column; {!edit_mode ? 'align-items: center; align-content: center; justify-content: space-around;' : 'align-items: bottom'} ">
 	{#if edit_mode}
-		<div style="display: flex; justify-content: space-between; align-items: center;">
-			<div>
-				<h1 style="margin: 0;">Island {data.slug}</h1>
+		<div style="flex: 1;">
+			<div style="display: flex; justify-content: space-between; align-items: center;">
+				<div>
+					<h1 style="margin: 0;">Island {data.slug}</h1>
+				</div>
+				<a href="/" class="btn btn-primary" aria-label="home"><i class="bi bi-house-door-fill"></i></a>
 			</div>
-			<a href="/" class="btn btn-primary" aria-label="home"><i class="bi bi-house-door-fill"></i></a>
+			<hr>
 		</div>
-		<hr>
+		<div style="{chat_mode ? "display:flex; justify-content: space-between; flex-flow: row wrap; align-items: flex-end;" : undefined}">
 		{#if !chat_mode}
 			<div style="margin-bottom: 20px;">
 				<!--<h3>Island Topology</h3>
@@ -179,6 +182,7 @@
 			<textarea class="form-control" placeholder="What would you like to include?" 
 				bind:value={ai_prompt_text} disabled="{ai_in_processing}" rows="1" onkeydown={(e) => {if(e.key == 'Enter'){ e.preventDefault(); ai_prompt();}}}></textarea>
 			<button disabled="{ai_in_processing}" class="btn btn-primary" type="button" id="button-addon2" onclick="{ai_prompt}">Generate</button>
+		</div>
 		</div>
 	{:else}
 		<div style="text-align: center;">
