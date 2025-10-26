@@ -18,9 +18,10 @@ This project is divided into three components:
 
 ## Setup
 
+### Deployment
+
 0. Run `npm i` at the root of the directory to install all the packages
 
-### Deployment
 
 1. Create the database and apply the schema with:
     ```
@@ -59,7 +60,7 @@ This project is divided into three components:
 > [!NOTE]
 > AI inference always uses cloud services even in local dev
 
-Follow steps 1. to 3. of the Deployment.
+Follow steps 0. to 3. of the Deployment.
 
 4. Create a local db instance with
 
