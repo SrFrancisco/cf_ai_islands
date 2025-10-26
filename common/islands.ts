@@ -30,7 +30,7 @@ enum ISLAND_GEOGRAPHY { PLAIN, MOUNTAINOUS, EQUILIBRATED }
 import { NoiseFuncs } from "./noise";
 const lerp = (x:number, y:number, a:number):number =>  a * (y - x) + x;
 
-const DEFAULT_PALETTE:Array<rgb> = [
+export const DEFAULT_PALETTE:Array<rgb> = [
     {r: 255, g: 255, b: 255},
     {r: 209, g: 209, b: 209},
     {r:143, g:204, b:88}, //{r: 155, g: 191, b: 145}, 
@@ -84,6 +84,15 @@ export function is_valid_profile(obj: any): obj is ISLAND_PROFILE {
     );
 }
 
+export const DEFAULT_TERRAIN = {
+    threshold_deep_water : 1,
+    threshold_water      : 0.65,
+    threshold_sand       : 0.55,
+    threshold_plain      : 0.5,
+    threshold_mountain   : 0.35,
+    threshold_snow       : 0.2
+}
+
 export const DEFAULT_PROFILE:ISLAND_PROFILE = {
     frequency           : 5,
     pow                 : 1.3,
@@ -95,12 +104,12 @@ export const DEFAULT_PROFILE:ISLAND_PROFILE = {
     nulFact_32          : 0.5,
     lerp_factor         : 0.5,
     lerp_sphere         : 0.3,
-    threshold_deep_water : 1,
-    threshold_water      : 0.65,
-    threshold_sand       : 0.55,
-    threshold_plain      : 0.5,
-    threshold_mountain   : 0.35,
-    threshold_snow       : 0.2,
+    threshold_deep_water : 0,
+    threshold_water      : 0,
+    threshold_sand       : 0, //-0.05,
+    threshold_plain      : 0, //-0.05,
+    threshold_mountain   : 0, //0.1,
+    threshold_snow       : 0,
     percentage_trees     : 0.5
 }
 
@@ -116,6 +125,7 @@ export class Island {
     _imageSize : number;
     _terrain : Array<Array<number>>;
     _decorations : Array<DecoratedObj>;
+    _profile: ISLAND_PROFILE
     noise = NoiseFuncs();
 
     constructor(imageSize:number, terrain?:Array<Array<number>>, decorations?:Array<DecoratedObj>)
@@ -124,12 +134,13 @@ export class Island {
         this._terrain = (terrain == null) ? Array.from({ length: imageSize }, () => new Array(imageSize)) :
             terrain;
         this._decorations = (decorations == null) ? [] : decorations;
+        this._profile = DEFAULT_PROFILE;
     }
-
-    generateBaseTerrain(seed=Math.random(), profile:ISLAND_PROFILE=DEFAULT_PROFILE) {
+    set_island_profile(profile:ISLAND_PROFILE) { this._profile = profile; }
+    generateBaseTerrain(seed=Math.random(), profile:ISLAND_PROFILE=this._profile) {
         // This implementation of island terrain generation was based on this site:
         // https://www.redblobgames.com/maps/terrain-from-noise/
-
+        this._decorations = [];
         this.noise.seed(seed);
         //REFs: https://www.redblobgames.com/maps/terrain-from-noise/
         let frequency = profile.frequency;
@@ -164,7 +175,11 @@ export class Island {
 
                 this._terrain[y][x] = base_terrain;
 
-                if(base_terrain < profile.threshold_plain && base_terrain >= profile.threshold_mountain)
+                const plain = (DEFAULT_TERRAIN.threshold_plain + profile.threshold_snow+ profile.threshold_mountain+ profile.threshold_plain);
+                const mountain = (DEFAULT_TERRAIN.threshold_mountain + profile.threshold_snow+ profile.threshold_mountain);
+
+                //let t = this.getThresholds(profile);
+                if(base_terrain < plain && base_terrain >= mountain)
                 {
                     // we will calculate tree distribution
                     nx = (start_pos_x+ x/this._imageSize - 0.5) * 7; 
@@ -177,28 +192,65 @@ export class Island {
         }
     }
 
-    getBaseTerrain(palette:Array<rgb> = DEFAULT_PALETTE, profile:ISLAND_PROFILE=DEFAULT_PROFILE) {
+    getBaseTerrain(palette:Array<rgb> = DEFAULT_PALETTE, profile:ISLAND_PROFILE=this._profile) {
         let returnArr:Array<Array<rgb>> = Array.from({ length: this._imageSize }, () => new Array(this._imageSize));
         let height = 0;
         if(palette.length < 6) throw Error("Palette too small");
-
+        console.log("PROFILE:",profile);
+        //for(let y = 0; y < this._imageSize; y++){
+        //    for(let x = 0; x < this._imageSize; x++){
+        //        height = this._terrain[y][x]
+        //        if(height < profile.threshold_snow)
+        //            returnArr[y][x] = palette[0];
+        //        else if(height < profile.threshold_mountain)
+        //            returnArr[y][x] = palette[1];
+        //        else if(height < profile.threshold_plain)
+        //            returnArr[y][x] = palette[2];
+        //        else if(height < profile.threshold_sand)
+        //            returnArr[y][x] = palette[3];
+        //        else if(height < profile.threshold_water)
+        //            returnArr[y][x] = palette[4];
+        //        else    
+        //            returnArr[y][x] = palette[5];
+        //    }
+        //}
+//
         for(let y = 0; y < this._imageSize; y++){
             for(let x = 0; x < this._imageSize; x++){
                 height = this._terrain[y][x]
-                if(height < profile.threshold_snow)
+                if(height < (DEFAULT_TERRAIN.threshold_snow 
+                                + profile.threshold_snow))
                     returnArr[y][x] = palette[0];
-                else if(height < profile.threshold_mountain)
+                else if(height < (DEFAULT_TERRAIN.threshold_mountain 
+                                + profile.threshold_snow
+                                + profile.threshold_mountain))
                     returnArr[y][x] = palette[1];
-                else if(height < profile.threshold_plain)
+                else if(height < (DEFAULT_TERRAIN.threshold_plain 
+                                + profile.threshold_snow
+                                + profile.threshold_mountain
+                                + profile.threshold_plain))
                     returnArr[y][x] = palette[2];
-                else if(height < profile.threshold_sand)
+                else if(height < (DEFAULT_TERRAIN.threshold_sand 
+                                + profile.threshold_snow
+                                + profile.threshold_mountain
+                                + profile.threshold_plain
+                                + profile.threshold_sand))
                     returnArr[y][x] = palette[3];
-                else if(height < profile.threshold_water)
+                else if(height < (DEFAULT_TERRAIN.threshold_water 
+                                + profile.threshold_snow
+                                + profile.threshold_mountain
+                                + profile.threshold_plain
+                                + profile.threshold_sand
+                                + profile.threshold_water))
                     returnArr[y][x] = palette[4];
                 else    
                     returnArr[y][x] = palette[5];
             }
         }
+
+        
+
+
         return returnArr;
 
     }

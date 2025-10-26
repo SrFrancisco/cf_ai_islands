@@ -1,4 +1,4 @@
-import { Island, OBJS_TYPES, type rgb, type DecoratedObj, type ISLAND_PROFILE, DEFAULT_PROFILE } from '@project/common';
+import { Island, OBJS_TYPES, type rgb, type DecoratedObj, type ISLAND_PROFILE, DEFAULT_PROFILE, DEFAULT_PALETTE } from '@project/common';
 import * as THREE from 'three'
 
 // CONFIGURATION -------------------
@@ -114,8 +114,7 @@ const render_island_pixels = (colors:Array<Array<THREE.Color>>) => {
 }
 
 const rgbToColor = (col:rgb) => new THREE.Color().setRGB(col.r/255, col.g/255, col.b/255);
-
-const render_island = (island:Island) => {
+const render_island = (island:Island,profile:ISLAND_PROFILE=DEFAULT_PROFILE) => {
   const radius = pixelSize / 2;
   const dummy = new THREE.Object3D();
   const far = new THREE.Object3D();
@@ -125,7 +124,7 @@ const render_island = (island:Island) => {
   const yOffset = 1.5 * radius;          // vertical spacing between centers
   let i = 0;
 
-  let terrain_color = island.getBaseTerrain();
+  let terrain_color = island.getBaseTerrain(DEFAULT_PALETTE,profile);
 
 
   for (let y = 0; y < gridSize; y++) {
@@ -156,7 +155,7 @@ const render_island = (island:Island) => {
       for(let j = 0; j < objs.length; j++) {
         if((objs[j].y*gridSize + objs[j].x) == i) {
           found = true;
-          console.log("Will place obj at ", i, " in ", objs[j].type);
+          //console.log("Will place obj at ", i, " in ", objs[j].type);
           if(objs[j].type == OBJS_TYPES.Fortress){
             dummy.renderOrder = i;
             dummy.scale.set(2, 2, 1);
@@ -179,6 +178,8 @@ const render_island = (island:Island) => {
             //objMeshes[OBJS_TYPES.Forest].setColorAt(i,new THREE.Color().setHex(0x7bb04b));
             objMeshes[OBJS_TYPES.Forest].setMatrixAt(i, dummy.matrix);
             color_override=tile_color.offsetHSL(0.0,0.0,0.1);
+
+            objMeshes[objs[j].type].instanceMatrix.needsUpdate = true
           }
 
 
@@ -201,9 +202,10 @@ const render_island = (island:Island) => {
       //  objMeshes[OBJS_TYPES.Forest].setMatrixAt(i, dummy.matrix);
       //console.log(island.terrain_color[y][x].getHexString())
       if(rgbToColor(terrain_color[y][x]).getHexString() == rgbToColor({r: 209, g: 209, b: 209}).getHexString()
-        || rgbToColor(terrain_color[y][x]).getHexString() == 'ffffff'){
+        || rgbToColor(terrain_color[y][x]).getHexString() == rgbToColor({r: 254, g: 254, b: 254}).getHexString()){
             //objMeshes[OBJS_TYPES.Mountain].setColorAt(i,new THREE.Color().setHex(0x7bb04b));
             objMeshes[OBJS_TYPES.Mountain].setMatrixAt(i, dummy.matrix);
+            objMeshes[OBJS_TYPES.Mountain].instanceMatrix.needsUpdate = true
       }
       i++;
     }
@@ -220,7 +222,7 @@ const render_island = (island:Island) => {
  * @param Island 
  * @returns 
  */
-const setup_island = (island:Island) => {
+const setup_island = (island:Island,profile:ISLAND_PROFILE=DEFAULT_PROFILE) => {
   function createPointyHexGeometry(r = 1) {
     const shape = new THREE.Shape();
     for (let i = 0; i < 6; i++) {
@@ -260,7 +262,7 @@ const setup_island = (island:Island) => {
   terrainMesh = new THREE.InstancedMesh(geometry, material, count);
   scene.add(terrainMesh);
 
-  render_island(island);
+  render_island(island,profile);
 };
 
 let island:Island;
@@ -347,6 +349,8 @@ const resize = () => {
         camera.bottom = -(frustumSize / aspect) / 2;
     }
     renderer.setPixelRatio(window.devicePixelRatio);
+    //island.generateBaseTerrain(10);
+    //render_island(island);
     camera.updateProjectionMatrix();
     if(!aside || window.innerWidth < 600)
       renderer.setSize(window.innerWidth, window.innerHeight);
@@ -365,7 +369,7 @@ export const createScene = (el:HTMLCanvasElement,seed:number=10,profile:ISLAND_P
 
   island = new Island(gridSize);
   island.generateBaseTerrain(seed,profile);
-  setup_island(island);
+  setup_island(island,profile);
 
   if(aside) el.setAttribute('style', 'float: right;');
 	resize();
@@ -387,8 +391,9 @@ export const new_island_map = (topo:Array<Array<number>>, objs:Array<DecoratedOb
 }
 export const new_island_profile = (profile:ISLAND_PROFILE) => {
   console.log("new_island_profile",profile);
+  island.set_island_profile(profile);
   island.generateBaseTerrain(10, profile);
-  render_island(island);
+  render_island(island,profile);
   animate();
 }
 

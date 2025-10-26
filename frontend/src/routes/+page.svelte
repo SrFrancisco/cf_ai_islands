@@ -6,49 +6,52 @@
     let {data} : PageProps = $props();
 </script>
 
-<div style="text-align: center; display: flex; align-items: center; justify-content: center; width: 100%; height: 100%;">
+<style>
+  .island_card:active {
+    box-shadow: none !important;
+    position: relative;
+    top: 5px;
+    left:5px;
+    transition: 300ms;
+  }
+</style>
+
+<div style="display: flex">
+
+<div style="text-align: center; align-items: center; justify-content: center; width: 100%; height: 100%; float: left;">
 
 <div style="margin-top: 2em">
-<h1>Welcome to Islands!</h1>
+<h1>IslandsML</h1>
+<p>Use LLMs to procedurally-generate islands with natural language</p>
 
 <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal" data-bs-whatever="@mdo">New Island</button>
 
 <div style="margin-top: 30px;">
-  <h3>Islands</h3>
-  {#if data.islands?.length == 0}
-    <span>(🏝️ No island found)</span>
-  {/if}
-<div style="display: flex; flex-direction: row; gap: 15px; justify-content: space-evenly;">
-  {#each data.islands as island}
-
-  <!--<div style="display: inline-block; background-color: azure;
-  border: 2px solid #56c8ff;
-  border-radius: 5px; margin: 5px;">
-    
-    <a href="/islands/{island}" style="text-decoration: none; color: black; padding: 5px 10px; margin: 5px; font-size: 1.5em;">
-      <span>🏝️</span> {island}</a>
-  </div>-->
-
-
-<a href="/islands/{island}" class="card" style="border: 2px solid #0d6efd; text-decoration: none; display: flex; flex-direction: row; box-shadow: 5px 5px #69a5ff;">
-  <div class="card-img-top" style="background-color: #c1eeff; border-right: 2px solid  #0d6efd; font-size: 2.5em; flex: 1; border-radius: 5px 0 0 5px;"><span>🏝️</span></div>
-  <div class="card-body" style="flex: 2">
-    <span class="card-title" style="font-size: 1.3em;">{island}</span>
+  <div style="padding-top: 15px; padding-bottom: 15px; background-color: #c1eeff; margin-bottom: 15px;">
+    <h3 style="margin: 0; padding: 0;">Created Islands</h3>
   </div>
-</a>
+  <div class="container">
+    {#if data.islands?.length == 0}
+      <span>(🏝️ No island found)</span>
+    {/if}
+    <div style="display: flex; flex-direction: row; gap: 15px; justify-content: space-evenly; flex-wrap: wrap;">
+      {#each data.islands as island}
+        <a href="/islands/{island}" class="card island_card" style="border: 2px solid #0d6efd; text-decoration: none; display: flex; flex-direction: row; box-shadow: 5px 5px #69a5ff;">
+          <div class="card-img-top" style="background-color: #c1eeff; border-right: 2px solid  #0d6efd; font-size: 2.5em; flex: 1; border-radius: 5px 0 0 5px;"><span>🏝️</span></div>
+          <div class="card-body" style="flex: 2">
+            <span class="card-title" style="font-size: 1.3em;">{island}</span>
+          </div>
+        </a>
+      {/each}
+    </div>
+  </div>
+</div>
 
 
-
-  {/each}
 </div>
 </div>
 
-
 </div>
-</div>
-
-
-
 
 
 <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">

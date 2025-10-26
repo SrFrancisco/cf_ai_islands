@@ -72,7 +72,10 @@
 		} else createScene(el,seed,(JSON.parse(data.island_data!.island_profile) as ISLAND_PROFILE));
 	});
 
-
+	if(data.island_data?.island_profile != null)
+		previous_prompts.push({
+				role: "assistant",
+				content: data.island_data?.island_profile});
 	const ai_prompt = async () => {
 
 		ai_in_processing = true;
@@ -130,38 +133,25 @@
 		<div style="{chat_mode ? "display:flex; justify-content: space-between; flex-flow: row wrap; align-items: flex-end;" : undefined}">
 		{#if !chat_mode}
 			<div style="margin-bottom: 20px;">
-				<!--<h3>Island Topology</h3>
-				<p>You can use the button below to generate a new terrain for the island. AI can also do it for you if you enable the option.</p>
-				<div class="form-check form-switch" style="margin-bottom: 10px;">
-					<input class="form-check-input" type="checkbox" role="switch" id="switchCheckDefault" onchange={() => {ai_topology = !ai_topology;}} checked>
-					<label class="form-check-label" for="switchCheckDefault">Let AI decide the topology based on the prompt.</label>
-				</div>
-				{#if ai_topology}
-					<button type="button" class="btn btn-primary" disabled>New Topology (random)</button>
-				{:else}
-					<button type="button" class="btn btn-primary" onclick={new_island}>New Topology (random)</button>
-				{/if}-->
 			</div>
 			<h3>AI-Assisted Decoration</h3>
 			<p>Enter your desired map changes in the box above for the LLM to modify it.
 			</p>
-			<b>Elements that the LLM can include:</b>
+			<p>LLM can change the parameters of the noise function in order to change the island appearance. It can change:</p>
 			<ul>
-				<li>Rocks</li>
-				<li>Forest (pick the colors)</li>
-				<li>Port</li>
-				<li>Boats</li>
-				<li>Villages</li>
-				<li>Datacenter</li>
+				<li>Global size of the island and its roundness</li>
+				<li>Steepness of the mountains and their frequency</li>
+				<li>Mean elevation of the island</li>
+				<li>Percentage of each biome (snow, mountain, plain, forest, sand, water and deep water)</li>
 			</ul>
 		{:else}
 			<div style="float: right; list-style-type: none; float: right; width:100%; gap: 10px; list-style: none; padding: 0; margin: 0; width: 100%;
     			max-height: 700px;overflow-y: auto;overflow-x: hidden;display: flex;flex-direction: column;justify-content: flex-end;gap: 10px;padding: 10px;box-sizing: border-box;">
 				<div style="list-style-type: none; margin-bottom: 20px; overflow-y: auto;" class="chat">
-				{#each previous_prompts as chat_msg}
-					{#if chat_msg.role == "assistant"}
+				{#each previous_prompts as chat_msg,i}
+					{#if chat_msg.role == "assistant" && (i != 0 || data.island_data?.island_profile == null)}
 						<div class="bot bubble"><div>Done!</div></div>
-					{:else}
+					{:else if chat_msg.role == "user"}
 						<div class="user bubble"><div>{chat_msg.content}</div></div>
 					{/if}
 				{/each}
@@ -179,7 +169,7 @@
 					<span>Loading, this may take a few seconds...</span>
 				</div>
 			{/if}
-			<textarea class="form-control" placeholder="What would you like to include?" 
+			<textarea class="form-control" placeholder="What would you like to include/modify?" 
 				bind:value={ai_prompt_text} disabled="{ai_in_processing}" rows="1" onkeydown={(e) => {if(e.key == 'Enter'){ e.preventDefault(); ai_prompt();}}}></textarea>
 			<button disabled="{ai_in_processing}" class="btn btn-primary" type="button" id="button-addon2" onclick="{ai_prompt}">Generate</button>
 		</div>
