@@ -1,21 +1,20 @@
 # IslandsML
 Use LLMs to procedurally-generate islands with natural language.
 
-[TOC]
 
 ## Concept
 This project explores the idea of using AI for world building. Specifically, it allows a user to specify the characteristics of an island and attempts to change the parameters of a noise-based procedural terrain generator.
 
-Users can create new islands and customize its appearance by prompting an LLM. The LLM receives a description of each available parameter and its effect on the island (noise frequency, biome delimiters, ...) along with a prompt and generates a set of configurations that are passed to the terrain generator. The user will then see the results and may ask for more modifications.
+Users can create new islands and customize its appearance by prompting an LLM. The LLM receives a description of each available parameter and its effect on the island (noise frequency, biome delimiters, ...) along with a prompt. It then generates a set of configurations that modifies the noise functions according to the request. Finally, the configuration is passed to a terrain generator for rendering, allowing the user to see the results and request further modifications.
 
 The terrain generator uses Simplex Noise and it is based on the Red Blob Games' article about map generation (https://www.redblobgames.com/maps/terrain-from-noise/).
 
 ## Architecture and Implementation
 This project is divided into two components:
 
-1. `frontend`: uses svelte kit for showing the UI and renders the island using Three.JS. It is deployed using Cloudflare Pages.
-2. `inferenceEngine`: Is a durable Workflow that receives prompts and sends them to a LLM, returning the results to the frontend once completed. This component was implemented with Cloudflare Workflows and uses Cloudflare Workers AI as their inference service with the `llama-3-8b-instruct` model.
-3. `database`: A relational database that stores all islands. It uses Cloudflare D1.
+1. **Frontend**: Uses SvelteKit for the UI and Three.js for island rendering. Deployed on Cloudflare Pages.
+2. **Inference Engine**: A durable workflow that receives user prompts, processes them with an LLM, and returns configuration results to the frontend. It runs on Cloudflare Workflows and uses Workers AI with the llama-3-8b-instruct model.
+3. **Database**: A relational database that stores all islands. It uses Cloudflare D1.
 
 ## Setup
 
@@ -37,7 +36,7 @@ This project is divided into two components:
 		}
 	]
     ```
-2. Copy the contents of `wrangler.sample.jsonc` to `wrangler.jsonc` in both `frontend/` and `workflow/` folder.
+2. Copy the contents of `wrangler.sample.jsonc` to `wrangler.jsonc` in both the `frontend/` and `workflow/` folder.
 
 3. Place the database binding at the end of each file
 
@@ -83,7 +82,7 @@ Follow steps 1. to 3. of the Deployment.
 
 
 
-## Sreenshots
+## Screenshots
 
 ![](./docs/island_edit.png)
 
