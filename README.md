@@ -10,7 +10,7 @@ Users can create new islands and customize its appearance by prompting an LLM. T
 The terrain generator uses Simplex Noise and it is based on the Red Blob Games' article about map generation (https://www.redblobgames.com/maps/terrain-from-noise/).
 
 ## Architecture and Implementation
-This project is divided into two components:
+This project is divided into three components:
 
 1. **Frontend**: Uses SvelteKit for the UI and Three.js for island rendering. Deployed on Cloudflare Pages.
 2. **Inference Engine**: A durable workflow that receives user prompts, processes them with an LLM, and returns configuration results to the frontend. It runs on Cloudflare Workflows and uses Workers AI with the llama-3-8b-instruct model.
@@ -18,7 +18,7 @@ This project is divided into two components:
 
 ## Setup
 
-0. Before starting run `npm i` at the root of the directory to install all the packages
+0. Run `npm i` at the root of the directory to install all the packages
 
 ### Deployment
 
