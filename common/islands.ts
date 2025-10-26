@@ -168,7 +168,7 @@ export class Island {
                         + profile.nulFact_2 * this.noise.simplex2(2 * nx, 2 * ny)
                         + profile.nulFact_4 * this.noise.simplex2(4 * nx, 4 * ny)
                         + profile.nulFact_8 * this.noise.simplex2(8 * nx, 8 * ny)
-                        + profile.nulFact_16 * this.noise.simplex2(16 * nx, 16 * ny);
+                        + profile.nulFact_16 * this.noise.simplex2(16 * nx, 16 * ny)
                         + profile.nulFact_32 *  this.noise.simplex2(32 * nx, 32 * ny);
                 e = e / (profile.nulFact_1+profile.nulFact_2+profile.nulFact_4+profile.nulFact_8
                     +profile.nulFact_16+profile.nulFact_32);
@@ -252,22 +252,5 @@ export class Island {
         return returnArr;
 
     }
-    
-    /**@deprecated */
-    getLLMFriendlyTerrain() {
-        let returnArr = Array.from({ length: this._imageSize }, () => new Array(this._imageSize));
-        let height = 0;
-        for(let y = 0; y < this._imageSize; y++){
-            for(let x = 0; x < this._imageSize; x++){
-                if(height < 0.55)
-                    returnArr[y][x] = 2;
-                else if(height < 0.65)
-                    returnArr[y][x] = 1;
-                else    
-                    returnArr[y][x] = 0;
-            }
-        }
 
-        return returnArr;
-    }
 };
