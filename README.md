@@ -25,9 +25,10 @@ This project is divided into three components:
 
 1. Create the database and apply the schema with:
     ```
+    # either in frontend/ or workflow/
     npx wrangler@latest d1 create islands-db --location weur --update-config --binding islands_db
 
-    npx wrangler d1 execute islands-db --remote --file=./db_schema.sql
+    npx wrangler d1 execute islands-db --remote --file=../db_schema.sql
     ```
     Copy the binding name provided, it should look like this:
     ```
@@ -50,7 +51,7 @@ This project is divided into three components:
 
 5. In the `frontend/` folder, deploy the UI with:
     ```
-    npx wrangler pages deploy --project-name islandsai
+    npm run build && npx wrangler pages deploy --project-name islandsai
     ```
 
 6. You should see the project deployed at the address provided by the last command
