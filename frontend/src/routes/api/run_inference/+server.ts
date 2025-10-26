@@ -10,8 +10,6 @@ export const POST: RequestHandler = async ({request,platform}) => {
     if(!(/^[a-zA-Z0-9]+$/.test(infReq.island_name!.toString()))) // sanity check
         return json({ status: 400 });
 
-    // await for the workflow to complete
-    //let instance = await platform!.env.WORKFLOW_SERVICE.connect();
     let instance = await platform?.env.MY_WORKFLOW.createInstance(infReq);
 
     // it was written on the database
@@ -21,9 +19,9 @@ export const POST: RequestHandler = async ({request,platform}) => {
     if(returnValue.error || returnValue.results.length != 1) 
         throw new Error();
     const st = returnValue.results!.at(0)!;
-    //if(st.island_topology == null || st.island_decorations == null)
-    //    throw new Error();
-    if(st.island_profile == null) throw new Error("topo is empty!");
+
+    if(st.island_profile == null) throw new Error("Could not find a profile!");
+
     console.log("CURRENT PROFILE=",st.island_profile);
     const returnBody:inferenceResponse = {
         profile: JSON.parse(st.island_profile!) as ISLAND_PROFILE, // we assume the value exists

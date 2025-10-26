@@ -65,7 +65,9 @@
         <form method="post" action="/api/new_island">
           <div class="mb-3">
             <label for="island_name" class="col-form-label">Island name:</label>
-            <input type="text" class="form-control" name="island_name">
+            <div style="display: flex; gap: 15px;">
+              <input type="text" class="form-control" name="island_name"><span style="position: relative; top: 3px; font-size: 1.3em;">Island</span>
+            </div>
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>

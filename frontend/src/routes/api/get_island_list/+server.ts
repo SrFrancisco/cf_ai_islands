@@ -12,7 +12,6 @@ export const GET: RequestHandler = (async ({url,request,platform}) => {
     let response:getIslandsResponse = {
         island_names: []
     };
-    console.log("RESULTS:",returnValue.results);
     returnValue.results.forEach((elem:islandsRow) => {
         response.island_names.push(elem.island_name);
     });

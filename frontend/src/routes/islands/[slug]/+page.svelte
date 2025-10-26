@@ -124,7 +124,7 @@
 		<div style="flex: 1;">
 			<div style="display: flex; justify-content: space-between; align-items: center;">
 				<div>
-					<h1 style="margin: 0;">Island {data.slug}</h1>
+					<h1 style="margin: 0;">{data.slug} Island</h1>
 				</div>
 				<a href="/" class="btn btn-primary" aria-label="home"><i class="bi bi-house-door-fill"></i></a>
 			</div>
@@ -142,7 +142,8 @@
 				<li>Global size of the island and its roundness</li>
 				<li>Steepness of the mountains and their frequency</li>
 				<li>Mean elevation of the island</li>
-				<li>Percentage of each biome (snow, mountain, plain, forest, sand, water and deep water)</li>
+				<li>Percentage of each biome (snow, mountain, plain, sand, water and deep water)</li>
+				<li>Percentage of trees in plain biome</li>
 			</ul>
 		{:else}
 			<div style="float: right; list-style-type: none; float: right; width:100%; gap: 10px; list-style: none; padding: 0; margin: 0; width: 100%;
@@ -176,7 +177,7 @@
 		</div>
 	{:else}
 		<div style="text-align: center;">
-			<h1 style="margin: 0; text-align: center;">Island {data.slug}</h1>
+			<h1 style="margin: 0; text-align: center;">{data.slug} Island</h1>
 			<button class="btn btn-primary" style="width: 80%; margin-top: 20px;" onclick="{toggleEditMode}">Edit</button>
 		</div>
 	{/if}
