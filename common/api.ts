@@ -27,8 +27,6 @@ export type inferenceRequest = {
 }
 
 export type inferenceResponse = {
-    //map:Array<Array<number>>,
-    //objs:Array<DecoratedObj>
     profile: ISLAND_PROFILE,
     used_tokens: number
 }

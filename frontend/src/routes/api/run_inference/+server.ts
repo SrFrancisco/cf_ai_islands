@@ -4,15 +4,20 @@ import type { D1Database } from '@cloudflare/workers-types';
 import type { inferenceRequest, inferenceResponse, islandsRow } from '@project/common/api';
 import type { ISLAND_PROFILE } from '@project/common';
 
+/**
+ * api: /run_inference {inferenceRequest}
+ * Triggers the inference workflow and returns the generated island profile
+ */
 export const POST: RequestHandler = async ({request,platform}) => {
     const infReq = await request.json<inferenceRequest>();
 
     if(!(/^[a-zA-Z0-9]+$/.test(infReq.island_name!.toString()))) // sanity check
         return json({ status: 400 });
 
+    //NOTE: This must be a blocking call!
     let instance = await platform?.env.MY_WORKFLOW.createInstance(infReq);
 
-    // it was written on the database
+    // get the data appended to the database
     const stmt = platform!.env.islands_db.prepare("SELECT * FROM islands WHERE island_name = ?")
         .bind(infReq.island_name);
     const returnValue:D1Result<islandsRow> = await stmt.run<islandsRow>();

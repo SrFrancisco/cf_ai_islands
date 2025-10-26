@@ -15,7 +15,7 @@
 	}
 
 	.chat li {
-	display: flex; /* allows easy left/right alignment */
+		display: flex; /* allows easy left/right alignment */
 	}
 
 	.bubble {
@@ -47,6 +47,7 @@
 	import { goto } from '$app/navigation';
     import type { inferenceRequest, inferenceResponse, Prompt } from '@project/common/api';
     import type { ISLAND_PROFILE } from '@project/common';
+
 	let { data }: PageProps = $props();
 	if(data.island_data == null)
 	{
@@ -54,13 +55,14 @@
 		goto("/");
 	}
 
-	let chat_mode = $state(false);
-	let edit_mode = $state(!data.island_data?.island_topology == null);
-	let ai_topology = $state(true);
-	const toggleEditMode = () => {edit_mode = true; console.log("UPDATE");}
+	let chat_mode = $state(false); /** shows the chat box and previous conversation */
+	let edit_mode = $state(!data.island_data?.island_topology == null); /** if not in edit mode only shows island name */
+	let ai_topology = $state(true); 
 	let ai_prompt_text:string = $state("");
 	let previous_prompts:Array<Prompt> = $state([]);
-	let ai_in_processing = $state(false);
+	let ai_in_processing = $state(false); /** disable prompt box while inference is running */
+
+	const toggleEditMode = () => {edit_mode = true; console.log("UPDATE");}
 
 	let el:HTMLCanvasElement;
 	const seed = data.island_data!.seed == null ? 10 : data.island_data!.seed;
@@ -73,11 +75,11 @@
 	});
 
 	if(data.island_data?.island_profile != null)
-		previous_prompts.push({
+		previous_prompts.push({ // insert previously generated profile for context
 				role: "assistant",
 				content: data.island_data?.island_profile});
-	const ai_prompt = async () => {
 
+	const ai_prompt = async () => {
 		ai_in_processing = true;
 		chat_mode = true;
 		previous_prompts.push({

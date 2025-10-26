@@ -3,6 +3,10 @@ import type { RequestHandler } from '@sveltejs/kit';
 import type { D1Database } from '@cloudflare/workers-types';
 import type { getIslandsResponse, islandsRow } from '@project/common/api';
 
+/**
+ * api: /get_island_list
+ * gets a list with the name of each island in the database
+ */
 export const GET: RequestHandler = (async ({url,request,platform}) => {
     const stmt = platform!.env.islands_db.prepare("SELECT * FROM islands;");
     const returnValue:D1Result<islandsRow> = await stmt.run<islandsRow>();

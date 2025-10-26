@@ -3,6 +3,10 @@ import type { RequestHandler } from '@sveltejs/kit';
 import type { D1Database } from '@cloudflare/workers-types';
 import type { islandsRow } from '@project/common/api';
 
+/**
+ * api: /new_island {island_name:str}
+ * Appends a new island to the database
+ */
 export const POST: RequestHandler = async ({request,platform}) => {
     const form_data = await request.formData();
     if(!form_data.has('island_name')) 

@@ -1,3 +1,12 @@
+import { NoiseFuncs } from "./noise";
+
+const lerp = (x:number, y:number, a:number):number =>  a * (y - x) + x;
+
+/**
+ * Objects that can be placed on topo of the terrain
+ * NOTE: Some of these objs haven't been implemented in the rendered and are future
+ *       work
+ */
 export enum OBJS_TYPES {
     Rock        = 0,
     Forest,
@@ -22,23 +31,21 @@ export interface DecoratedObj {
     color?: rgb; /** NOTE: only applicable to OBJS that support it */
 }
 
-// Island terrain classification
-enum ISLAND_SIZE { BIG, NORMAL, SMALL }
-enum ISLAND_GEOGRAPHY { PLAIN, MOUNTAINOUS, EQUILIBRATED }
-
-
-import { NoiseFuncs } from "./noise";
-const lerp = (x:number, y:number, a:number):number =>  a * (y - x) + x;
-
+/**
+ * Default terrain colors. Each idx corresponds to a biome (ordered)
+ */
 export const DEFAULT_PALETTE:Array<rgb> = [
     {r: 255, g: 255, b: 255},
     {r: 209, g: 209, b: 209},
-    {r:143, g:204, b:88}, //{r: 155, g: 191, b: 145}, 
+    {r:143, g:204, b:88},
     {r: 240, g: 242, b: 160},
     {r: 32, g: 97, b: 140},
     {r: 19, g: 62, b: 135}
 ];
 
+/**
+ * Terrain generator configuration parameters
+ */
 export type ISLAND_PROFILE = {
     frequency:number,
     pow:number,
@@ -50,16 +57,19 @@ export type ISLAND_PROFILE = {
     nulFact_32:number,
     lerp_factor:number,
     lerp_sphere:number,
-    threshold_deep_water:number,
+
+    // biome limits override (see DEFAULT_TERRAIN for base values)
+    // range -1 to 1
+    threshold_deep_water:number, 
     threshold_water:number,
     threshold_sand:number,
     threshold_plain:number,
     threshold_mountain:number,
     threshold_snow:number,
-    percentage_trees:number
+
+    percentage_trees:number /** NOTE: Only placed in 'plane' biome */
 };
 
-// {"parameters": {"frequency": 3, "pow": 1.1, "nulFact_1": 0.45, "nulFact_2": 0.22, "nulFact_4": 0.15, "nulFact_8": 0.31, "nulFact_16": 0.1, "nulFact_32": 0.45, "lerp_factor": 0.55, "lerp_sphere": 0.4, "threshold_deep_water": 1, "threshold_water": 0.6, "threshold_sand": 0.7, "threshold_plain": 0.45, "threshold_mountain": 0.25, "threshold_snow": 0.15}}
 
 export function is_valid_profile(obj: any): obj is ISLAND_PROFILE {
     return (
@@ -84,6 +94,7 @@ export function is_valid_profile(obj: any): obj is ISLAND_PROFILE {
     );
 }
 
+
 export const DEFAULT_TERRAIN = {
     threshold_deep_water : 1,
     threshold_water      : 0.65,
@@ -104,22 +115,14 @@ export const DEFAULT_PROFILE:ISLAND_PROFILE = {
     nulFact_32          : 0.5,
     lerp_factor         : 0.5,
     lerp_sphere         : 0.3,
-    threshold_deep_water : 0,
+    threshold_deep_water : 0, /** NOTE: Zero because by default we use DEFAULT_TERRAIN */
     threshold_water      : 0,
-    threshold_sand       : 0, //-0.05,
-    threshold_plain      : 0, //-0.05,
-    threshold_mountain   : 0, //0.1,
+    threshold_sand       : 0,
+    threshold_plain      : 0,
+    threshold_mountain   : 0,
     threshold_snow       : 0,
     percentage_trees     : 0.5
 }
-
-//let p = JSON.parse('{"parameters": {"frequency": 5, "pow": 1.3, "nulFact_1": 0.6, "nulFact_2": 0.3, "nulFact_4": 0.01, "nulFact_8": 0.4, "nulFact_16": 0.05, "nulFact_32": 0.2, "lerp_factor": 0.5, "lerp_sphere": 0.3, "threshold_deep_water": 0.05, "threshold_water": 0.1, "threshold_sand": 0.05, "threshold_plain": 0.45, "threshold_mountain": 0.45, "threshold_snow": 0.05}}');
-//DEFAULT_PROFILE = <ISLAND_PROFILE>p['parameters'];
-//console.log(DEFAULT_PROFILE);
-//
-//let p = JSON.parse('{"frequency": 6, "pow": 1.2, "nulFact_1": 0.7, "nulFact_2": 0.2, "nulFact_4": 0.1, "nulFact_8": 0.3, "nulFact_16": 0.1, "nulFact_32": 0.5, "lerp_factor": 0.55, "lerp_sphere": 0.4, "threshold_deep_water": 1, "threshold_water": 0.7, "threshold_sand": 0.6, "threshold_plain": 0.55, "threshold_mountain": 0.4, "threshold_snow": 0.15}}');
-//if(!is_valid_profile(p))
-//    throw new Error("BAD");
 
 export class Island {
     _imageSize : number;
@@ -136,20 +139,25 @@ export class Island {
         this._decorations = (decorations == null) ? [] : decorations;
         this._profile = DEFAULT_PROFILE;
     }
-    set_island_profile(profile:ISLAND_PROFILE) { this._profile = profile; }
+
+    set_island_profile(profile:ISLAND_PROFILE) { 
+        this._profile = profile; 
+    }
+
+    /**
+     * This function generates base terrain and places biome objects
+     */
     generateBaseTerrain(seed=Math.random(), profile:ISLAND_PROFILE=this._profile) {
         // This implementation of island terrain generation was based on this site:
         // https://www.redblobgames.com/maps/terrain-from-noise/
+
         this._decorations = [];
         this.noise.seed(seed);
-        //REFs: https://www.redblobgames.com/maps/terrain-from-noise/
         let frequency = profile.frequency;
         let pow_val = profile.pow;
-        //let frequency = 5;
-        //let pow_val = 1;
 
-        let start_pos_x = 0.4; //Math.random();
-        let start_pos_y = 0.9; //Math.random();
+        let start_pos_x = 0.4; /** Arbitrary */
+        let start_pos_y = 0.9;
         // get base terrain
         for(let y = 0; y < this._imageSize; y++){
             for(let x = 0; x < this._imageSize; x++){
@@ -166,55 +174,48 @@ export class Island {
                     +profile.nulFact_16+profile.nulFact_32);
                 e = (e / 2) + 0.5 // normalize
 
-
                 let base_terrain = Math.pow(e,pow_val);
 
+                // Euclidean distance
                 let d = Math.min(1,profile.lerp_sphere+((((2*x/this._imageSize)-1)**2 + (((2*y/this._imageSize)-1)**2))/Math.sqrt(2)));
-                //base_terrain = lerp(base_terrain,d,0.65);
+
                 base_terrain = lerp(base_terrain,d,profile.lerp_factor);
 
                 this._terrain[y][x] = base_terrain;
 
+
                 const plain = (DEFAULT_TERRAIN.threshold_plain + profile.threshold_snow+ profile.threshold_mountain+ profile.threshold_plain);
                 const mountain = (DEFAULT_TERRAIN.threshold_mountain + profile.threshold_snow+ profile.threshold_mountain);
 
-                //let t = this.getThresholds(profile);
+                // check if point belogs to 'plain' biome to place trees
                 if(base_terrain < plain && base_terrain >= mountain)
                 {
-                    // we will calculate tree distribution
+                    // we will calculate tree distribution (another noise function)
                     nx = (start_pos_x+ x/this._imageSize - 0.5) * 7; 
                     ny = (start_pos_y+ y/this._imageSize - 0.5) * 7;
                     e = (this.noise.simplex2(1 * nx, 1 * ny)/2) + 0.5;
+
                     if(e >= (1-profile.percentage_trees))
-                        this._decorations.push({type:OBJS_TYPES.Forest,x:x,y:y});
+                        this._decorations.push({ type:OBJS_TYPES.Forest, x:x, y:y });
                 }
+
+                //NOTE: In this implementation we also place 'mountains' as an obj. However, that is not
+                //      calculated here because it is not subject to noise (every 'mountain' tile will have a mountain
+                //      object). Check frontend/src/lib/scene.ts:204
+
             }
         }
     }
 
+    /**
+     * Retrieve the base map with biomes already applied.
+     * Requires the island to be generated prior to this call (generateBaseTerrain)
+     */
     getBaseTerrain(palette:Array<rgb> = DEFAULT_PALETTE, profile:ISLAND_PROFILE=this._profile) {
         let returnArr:Array<Array<rgb>> = Array.from({ length: this._imageSize }, () => new Array(this._imageSize));
         let height = 0;
         if(palette.length < 6) throw Error("Palette too small");
-        console.log("PROFILE:",profile);
-        //for(let y = 0; y < this._imageSize; y++){
-        //    for(let x = 0; x < this._imageSize; x++){
-        //        height = this._terrain[y][x]
-        //        if(height < profile.threshold_snow)
-        //            returnArr[y][x] = palette[0];
-        //        else if(height < profile.threshold_mountain)
-        //            returnArr[y][x] = palette[1];
-        //        else if(height < profile.threshold_plain)
-        //            returnArr[y][x] = palette[2];
-        //        else if(height < profile.threshold_sand)
-        //            returnArr[y][x] = palette[3];
-        //        else if(height < profile.threshold_water)
-        //            returnArr[y][x] = palette[4];
-        //        else    
-        //            returnArr[y][x] = palette[5];
-        //    }
-        //}
-//
+
         for(let y = 0; y < this._imageSize; y++){
             for(let x = 0; x < this._imageSize; x++){
                 height = this._terrain[y][x]
@@ -248,13 +249,11 @@ export class Island {
             }
         }
 
-        
-
-
         return returnArr;
 
     }
     
+    /**@deprecated */
     getLLMFriendlyTerrain() {
         let returnArr = Array.from({ length: this._imageSize }, () => new Array(this._imageSize));
         let height = 0;

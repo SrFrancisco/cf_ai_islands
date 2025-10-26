@@ -3,6 +3,10 @@ import type { RequestHandler } from '@sveltejs/kit';
 import type { D1Database } from '@cloudflare/workers-types';
 import type { islandsRow } from '@project/common/api';
 
+/**
+ * api: /get_island?island_name=<name>
+ * gets the database row for the requested island
+ */
 export const GET: RequestHandler = (async ({url,request,platform}) => {
     const island_name = url.searchParams.get('island_name');
     if(!(/^[a-zA-Z0-9]+$/.test(island_name!.toString())))

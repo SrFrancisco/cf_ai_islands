@@ -2,12 +2,6 @@ import { Island, OBJS_TYPES, type rgb, type DecoratedObj, type ISLAND_PROFILE, D
 import * as THREE from 'three'
 
 // CONFIGURATION -------------------
-//const gridSize = 200;      // number of pixels in X and Y
-//const pixelSize = 0.5;       // size of each pixel
-
-//const gridSize = 50;      // number of pixels in X and Y
-//const pixelSize = 2.5;       // size of each pixel
-
 const gridSize = 35;      // number of pixels in X and Y
 const pixelSize = 3.4;       // size of each pixel
 const aside = true;
@@ -15,6 +9,7 @@ const asideRatio = 1.6;
 
 const count = gridSize * gridSize;
 // ---------------------------------
+
 const norm = (col:number) => {return col / 255};
 
 // Textures
@@ -35,17 +30,20 @@ async function loadTexture(url: string) {
 }
 
 
-const textures = {
-  [OBJS_TYPES.Boat]:        await loadTexture("/img/Sprite-0005.png"), // need the textures loaded prior to rendering
-  [OBJS_TYPES.Datacenter]:  await loadTexture("/img/datacenter.png"),
+const textures = { // need the textures loaded prior to rendering
+
   [OBJS_TYPES.Forest]:      await loadTexture("/img/trees.png"),
-  [OBJS_TYPES.Port]:        await loadTexture("/img/Sprite-0005.png"),
-  [OBJS_TYPES.Village]:     await loadTexture("/img/Sprite-0005.png"),
-  [OBJS_TYPES.Rock]:        await loadTexture("/img/Sprite-0005.png"),
-  [OBJS_TYPES.Fortress]:    await loadTexture("/img/castle-1.png"),
-  [OBJS_TYPES.Apartment]:   await loadTexture("/img/appartment.png"),
-  [OBJS_TYPES.PowerPlant]:   await loadTexture("/img/powerPlant.png"),
-  [OBJS_TYPES.Mountain]:    await loadTexture("/img/mountain.png")
+  [OBJS_TYPES.Mountain]:    await loadTexture("/img/mountain.png"),
+
+  /** NOTE: These objs aren't yet supported. Defined with placeholder texture */
+  [OBJS_TYPES.Port]:        await loadTexture("/img/trees.png"),
+  [OBJS_TYPES.Village]:     await loadTexture("/img/trees.png"),
+  [OBJS_TYPES.Rock]:        await loadTexture("/img/trees.png"),
+  [OBJS_TYPES.Fortress]:    await loadTexture("/img/trees.png"),
+  [OBJS_TYPES.Apartment]:   await loadTexture("/img/trees.png"),
+  [OBJS_TYPES.PowerPlant]:  await loadTexture("/img/trees.png"),
+  [OBJS_TYPES.Boat]:        await loadTexture("/img/trees.png"), 
+  [OBJS_TYPES.Datacenter]:  await loadTexture("/img/trees.png")
 }
 
 // MAP meshes
@@ -78,9 +76,11 @@ camera.position.set(0, 0, 1)
 //  Main rendering functions
 // ---------------------------
 
+/** 
+ * @deprecated
+ * Renders the map as a collection of "pixels" 
+ * */
 const render_island_pixels = (colors:Array<Array<THREE.Color>>) => {
-  // Precondition: colors array must have the 
-  //TODO: There must be a better way to handle errors
   console.log(colors)
   if(colors.length != gridSize) throw Error("array size differs");
   colors.forEach(element => {
@@ -98,9 +98,6 @@ const render_island_pixels = (colors:Array<Array<THREE.Color>>) => {
   for(let y = 0; y < gridSize; y++) {
     for(let x = 0; x < gridSize; x++) {
       dummy.position.set( (x - gridSize/2)* pixelSize, (y - gridSize/2)* pixelSize, 0 );
-      //const color = new THREE.Color(colors[y][x],colors[y][x],colors[y][x]);
-      //const color = new THREE.Color(colors[y][x],colors[y][x],colors[y][x]);
-      //const color = new THREE.Color(Math.random(), Math.random(), Math.random());
       dummy.updateMatrix();
       mesh.setMatrixAt( i, dummy.matrix );
       mesh.setColorAt(i,colors[y][x]);
@@ -114,6 +111,10 @@ const render_island_pixels = (colors:Array<Array<THREE.Color>>) => {
 }
 
 const rgbToColor = (col:rgb) => new THREE.Color().setRGB(col.r/255, col.g/255, col.b/255);
+
+/**
+ * Renders the map as a collection of hexagons organized in a bee-like structure
+ */
 const render_island = (island:Island,profile:ISLAND_PROFILE=DEFAULT_PROFILE) => {
   const radius = pixelSize / 2;
   const dummy = new THREE.Object3D();
@@ -125,7 +126,6 @@ const render_island = (island:Island,profile:ISLAND_PROFILE=DEFAULT_PROFILE) => 
   let i = 0;
 
   let terrain_color = island.getBaseTerrain(DEFAULT_PALETTE,profile);
-
 
   for (let y = 0; y < gridSize; y++) {
     for (let x = 0; x < gridSize; x++) {
@@ -139,12 +139,11 @@ const render_island = (island:Island,profile:ISLAND_PROFILE=DEFAULT_PROFILE) => 
       let color_override:null|THREE.Color = null;
 
       dummy.position.set(xPos, yPos, 0);
-      //dummy.rotation.set(0, 0, 0.5222);
       dummy.rotation.set(0, 0, 0);
 
       dummy.updateMatrix();
 
-      //TODO: O^4 need to optimize this
+      // check if any objs need to be placed in this position
       let found = false;
       const objs = island._decorations;
       for (const [_, value] of Object.entries(objMeshes)){
@@ -155,58 +154,59 @@ const render_island = (island:Island,profile:ISLAND_PROFILE=DEFAULT_PROFILE) => 
       for(let j = 0; j < objs.length; j++) {
         if((objs[j].y*gridSize + objs[j].x) == i) {
           found = true;
-          //console.log("Will place obj at ", i, " in ", objs[j].type);
+
+          // set scale for big objs
           if(objs[j].type == OBJS_TYPES.Fortress){
             dummy.renderOrder = i;
             dummy.scale.set(2, 2, 1);
           }
-          if(objs[j].type == OBJS_TYPES.Apartment || objs[j].type == OBJS_TYPES.PowerPlant
+          if(   objs[j].type == OBJS_TYPES.Apartment 
+             || objs[j].type == OBJS_TYPES.PowerPlant
              || objs[j].type == OBJS_TYPES.Datacenter
           ){  
             dummy.renderOrder = x;
             dummy.scale.set(1.5,1.5,1);
           }
+
           dummy.updateMatrix();
           objMeshes[objs[j].type].setMatrixAt(i, dummy.matrix);
 
           if(objs[j].type == OBJS_TYPES.Forest) {
-            //let a = new THREE.Color().setHSL(0.3,0.5,0.5);
             dummy.scale.set(1,1,1);
-            //const tile_color = (objs[j].color != null) ? rgbToColor(objs[j].color!) : new THREE.Color(norm(240), norm(139), norm(231));
             const tile_color = (objs[j].color != null) ? rgbToColor(objs[j].color!) : new THREE.Color().setHex(0x7bb04b);
+
             objMeshes[objs[j].type].setColorAt(i, tile_color);
-            //objMeshes[OBJS_TYPES.Forest].setColorAt(i,new THREE.Color().setHex(0x7bb04b));
             objMeshes[OBJS_TYPES.Forest].setMatrixAt(i, dummy.matrix);
-            color_override=tile_color.offsetHSL(0.0,0.0,0.1);
+
+            color_override=tile_color.offsetHSL(0.0,0.0,0.1); // the forest obj influences 
+                                                              // the color of the underlying tile 
 
             objMeshes[objs[j].type].instanceMatrix.needsUpdate = true
           }
 
-
-          //objMeshes[objs[j].type].setColorAt(i, new THREE.Color(0,1,0));
-          //objMeshes[objs[j].type].instanceMatrix.needsUpdate = true;
-          //objMeshes[objs[j].type].setColorAt(i, island.terrain_color[y][x]);
         }
       }
+
       dummy.renderOrder = 0;
       dummy.scale.set(1, 1, 1);
       dummy.updateMatrix();
       terrainMesh.setMatrixAt(i, dummy.matrix);
+
+      // places underlying tile
       if(color_override == null)
         terrainMesh.setColorAt(i, rgbToColor(terrain_color[y][x]));
       else {
         terrainMesh.setColorAt(i, color_override);
         color_override = null;
       }
-      //if(rgbToColor(terrain_color[y][x]) == rgbToColor({r: 155, g: 191, b: 145}))
-      //  objMeshes[OBJS_TYPES.Forest].setMatrixAt(i, dummy.matrix);
-      //console.log(island.terrain_color[y][x].getHexString())
-      if(rgbToColor(terrain_color[y][x]).getHexString() == rgbToColor({r: 209, g: 209, b: 209}).getHexString()
-        || rgbToColor(terrain_color[y][x]).getHexString() == rgbToColor({r: 254, g: 254, b: 254}).getHexString()){
-            //objMeshes[OBJS_TYPES.Mountain].setColorAt(i,new THREE.Color().setHex(0x7bb04b));
+
+      // special case: mountain. Will place the texture in every tile of the biome
+      if(   rgbToColor(terrain_color[y][x]).getHexString() == rgbToColor({r: 209, g: 209, b: 209}).getHexString()
+         || rgbToColor(terrain_color[y][x]).getHexString() == rgbToColor({r: 254, g: 254, b: 254}).getHexString()){
             objMeshes[OBJS_TYPES.Mountain].setMatrixAt(i, dummy.matrix);
             objMeshes[OBJS_TYPES.Mountain].instanceMatrix.needsUpdate = true
       }
+
       i++;
     }
   }
@@ -218,9 +218,8 @@ const render_island = (island:Island,profile:ISLAND_PROFILE=DEFAULT_PROFILE) => 
 };
 
 /**
+ * Generate the graphical primitives to render the map (hexagons, textures)
  * THIS FUNCTION SHOULD ONLY BE RUN ONCE. (it adds the meshes to the scene)
- * @param Island 
- * @returns 
  */
 const setup_island = (island:Island,profile:ISLAND_PROFILE=DEFAULT_PROFILE) => {
   function createPointyHexGeometry(r = 1) {
@@ -240,9 +239,9 @@ const setup_island = (island:Island,profile:ISLAND_PROFILE=DEFAULT_PROFILE) => {
   const geometry = createPointyHexGeometry(radius);
   geometry.rotateZ(Math.PI / 6);
 
-  
+  // Texture tile initialization. These will be placed on top of the basic map
+  // tiles to display an obj
   Object.keys(textures).forEach((key:string) => {
-    //const textVal:OBJS_TYPES = +key;
     const textVal = Number(key) as OBJS_TYPES;
     const material = new THREE.MeshBasicMaterial({
       map: textures[textVal],
@@ -255,9 +254,10 @@ const setup_island = (island:Island,profile:ISLAND_PROFILE=DEFAULT_PROFILE) => {
     material.map!.center.set(0.5, 0.65);
     material.map!.rotation = -Math.PI / 6; // keep upright
     objMeshes[textVal] = new THREE.InstancedMesh(geometry,material,count);
-    //instanceMeshes[textVal].translateX(-((gridSize+1)*(pixelSize/2)));
     scene.add(objMeshes[textVal]);
   });
+
+  // basic tile (colored)
   const material = new THREE.MeshBasicMaterial({ vertexColors: false, side: THREE.DoubleSide, transparent: false,  toneMapped: false });
   terrainMesh = new THREE.InstancedMesh(geometry, material, count);
   scene.add(terrainMesh);
@@ -265,70 +265,17 @@ const setup_island = (island:Island,profile:ISLAND_PROFILE=DEFAULT_PROFILE) => {
   render_island(island,profile);
 };
 
+
+// STATE -----------------
 let island:Island;
+// -----------------------
 
-//const geometry = new THREE.PlaneGeometry(pixelSize,pixelSize);
-//let mesh = new THREE.InstancedMesh(geometry, new THREE.MeshBasicMaterial({color: 0xffffff , vertexColors: false}), count);
-//scene.add(mesh);
-//
-//const dummy = new THREE.Object3D();
-//let i = 0;
-//
-//for(let y = 0; y < gridSize; y++) {
-//	for(let x = 0; x < gridSize; x++) {
-//		dummy.position.set( (x - gridSize/2)* pixelSize, (y - gridSize/2)* pixelSize, 0 );
-//		const color = new THREE.Color(Math.random(), Math.random(), Math.random());
-//		dummy.updateMatrix();
-//		mesh.setMatrixAt( i, dummy.matrix );
-//		mesh.setColorAt(i,color);
-//		i++;
-//	}
-//}
-//
-//if (mesh.instanceColor) {
-//	mesh.instanceColor.needsUpdate = true;
-//}
-
-//const placeObjs = (objs:Array<DecoratedObj>) => {
-//  objs.forEach((element:DecoratedObj) => {
-//    //REF: https://github.com/mrdoob/three.js/issues/22102#issuecomment-1207288786
-//    const emptyMatrix = new THREE.Matrix4();
-//    const baseMatrix = new THREE.Matrix4();
-//    let i = element.y*gridSize + element.x;
-//    mesh.getMatrixAt(i,baseMatrix);
-//    mesh.setMatrixAt(i, emptyMatrix); // set base matrix to zero
-//    instanceMeshes[element.type].setMatrixAt(i,baseMatrix);
-//    instanceMeshes[element.type].setColorAt(i,new THREE.Color(Math.random(),Math.random(),Math.random()));
-//
-//    mesh.instanceMatrix.needsUpdate = true;
-//    instanceMeshes[element.type].instanceMatrix.needsUpdate = true;
-//  })
-//}
-
-//placeObjs([{type: OBJS_TYPES.Datacenter, x: 10, y:10}]);
-
-
-
-const update = () => {
-  //for(let i = 0; i < gridSize*gridSize; i++){
-  //  const color = new THREE.Color(Math.random(), Math.random(), Math.random());
-  //  mesh.setColorAt(i,color);
-  //}
-  //if (mesh.instanceColor) {
-  //  mesh.instanceColor.needsUpdate = true;
-  //}
-};
-
+const update = () => {};
 
 const animate = () => {
-	//requestAnimationFrame(animate);
-  //update();
-  //mesh.rotation.z += 0.002;
-  //Object.keys(textures).forEach((key:string) => {
-  //  //const textVal:OBJS_TYPES = +key;
-  //  const textVal = Number(key) as OBJS_TYPES;
-  //  renderer.initTexture(textures[textVal]);
-  //});
+  // there is no need to keep refreshing the scene as the image is static, we
+  // call render manually
+
 	renderer.render(scene, camera);
 };
 
@@ -349,8 +296,6 @@ const resize = () => {
         camera.bottom = -(frustumSize / aspect) / 2;
     }
     renderer.setPixelRatio(window.devicePixelRatio);
-    //island.generateBaseTerrain(10);
-    //render_island(island);
     camera.updateProjectionMatrix();
     if(!aside || window.innerWidth < 600)
       renderer.setSize(window.innerWidth, window.innerHeight);
@@ -381,21 +326,22 @@ export const new_island = () => {
   island.generateBaseTerrain();
   render_island(island);
   animate();
-}
+};
 
 export const new_island_map = (topo:Array<Array<number>>, objs:Array<DecoratedObj>) => {
   island = new Island(gridSize,topo,objs);
   island.generateBaseTerrain();
   render_island(island);
   animate();
-}
+};
+
 export const new_island_profile = (profile:ISLAND_PROFILE) => {
   console.log("new_island_profile",profile);
   island.set_island_profile(profile);
   island.generateBaseTerrain(10, profile);
   render_island(island,profile);
   animate();
-}
+};
 
 window.addEventListener('resize', resize);
 
