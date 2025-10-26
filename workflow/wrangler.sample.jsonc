@@ -1,0 +1,35 @@
+// <docs-tag name="workflows-wrangler.json">
+//$schema: "node_modules/wrangler/config-schema.json"
+/**
+ * For more details on how to configure Wrangler, refer to:
+ * https://developers.cloudflare.com/workers/wrangler/configuration/
+ */
+{
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"name": "islands-functions",
+	"main": "./src/inference_engine.ts",
+	"compatibility_date": "2024-10-22",
+	"observability": {
+		"enabled": true
+	},
+	"ai": {
+		"binding": "AI"
+	},
+	"workflows": [
+		{
+			// name of your workflow
+			"name": "inference-workflow",
+			// binding name env.MYWORKFLOW
+			"binding": "MY_WORKFLOW",
+			// this is class that extends the Workflow class in src/index.ts
+			"class_name": "InferenceWorkflow"
+		}
+	],
+
+	"d1_databases": [
+
+		// >>>>> COPY YOUR DATABASE BINDING HERE <<<<<
+        
+	]
+
+}

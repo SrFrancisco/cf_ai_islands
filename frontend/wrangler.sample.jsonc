@@ -1,0 +1,27 @@
+/**
+ * For more details on how to configure Wrangler, refer to:
+ * https://developers.cloudflare.com/workers/wrangler/configuration/
+ */
+{
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"name": "frontend",
+	"compatibility_date": "2025-10-11",
+	"compatibility_flags": [
+		"nodejs_als"
+	],
+	"pages_build_output_dir": ".svelte-kit/cloudflare",
+	"observability": {
+		"enabled": true
+	},
+	"services": [
+		{
+			"binding": "MY_WORKFLOW",
+			"service": "islands-functions"
+		}
+	],
+	"d1_databases": [
+		
+        // >>>>> COPY YOUR DATABASE BINDING HERE <<<<<
+
+	]
+}
