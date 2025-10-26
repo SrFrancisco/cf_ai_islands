@@ -18,6 +18,8 @@ This project is divided into two components:
 
 ## Setup
 
+0. Before starting run `npm i` at the root of the directory to install all the packages
+
 ### Deployment
 
 1. Create the database and apply the schema with:
@@ -62,7 +64,8 @@ Follow steps 1. to 3. of the Deployment.
 4. Create a local db instance with
 
     ```
-    npx wrangler d1 execute islands-db --local --file=./db_schema.sql --persist-to ./db
+    # either worklow/ or frontend/
+    npx wrangler d1 execute islands-db --local --file=../db_schema.sql --persist-to ../db
     ```
 
 5. Run workflow locally
@@ -77,7 +80,7 @@ Follow steps 1. to 3. of the Deployment.
     ```
     # in frontend/
     # <BINDING> = database_id pasted in the config file
-    npm run build && npx wrangler dev --d1 islands_db=<BINDING> --persist-to ../db  
+    npm run build && npx wrangler pages dev --d1 islands_db=<BINDING> --persist-to ../db  
     ```
 
 
