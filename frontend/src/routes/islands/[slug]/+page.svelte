@@ -63,12 +63,13 @@
 	let ai_in_processing = $state(false);
 
 	let el:HTMLCanvasElement;
+	const seed = data.island_data!.seed == null ? 10 : data.island_data!.seed;
 	onMount(() => {
 		if(data.island_data!.island_profile == null)
 		{	
 			console.log("Using default profile!");
-			createScene(el);
-		} else createScene(el,(JSON.parse(data.island_data!.island_profile) as ISLAND_PROFILE));
+			createScene(el,seed);
+		} else createScene(el,seed,(JSON.parse(data.island_data!.island_profile) as ISLAND_PROFILE));
 	});
 
 
@@ -120,7 +121,7 @@
 		{#if !chat_mode}
 			<div style="display: flex; justify-content: space-between; align-items: baseline;">
 				<div>
-					<h1 style="margin: 0;">Island #1</h1>
+					<h1 style="margin: 0;">Island {data.slug}</h1>
 				</div>
 			</div>
 			<hr>
@@ -150,7 +151,7 @@
 				<li>Datacenter</li>
 			</ul>
 		{:else}
-			<div bind:this={chatWrapper} style="float: right; list-style-type: none; float: right; width:100%; gap: 10px; list-style: none; padding: 0; margin: 0; width: 100%;
+			<div style="float: right; list-style-type: none; float: right; width:100%; gap: 10px; list-style: none; padding: 0; margin: 0; width: 100%;
     			max-height: 700px;overflow-y: auto;overflow-x: hidden;display: flex;flex-direction: column;justify-content: flex-end;gap: 10px;padding: 10px;box-sizing: border-box;">
 				<div style="list-style-type: none; margin-bottom: 20px; overflow-y: auto;" class="chat">
 				{#each previous_prompts as chat_msg}
@@ -180,7 +181,7 @@
 		</div>
 	{:else}
 		<div style="text-align: center;">
-			<h1 style="margin: 0; text-align: center;">Island #1</h1>
+			<h1 style="margin: 0; text-align: center;">Island {data.slug}</h1>
 			<button class="btn btn-primary" style="width: 80%; margin-top: 20px;" onclick="{toggleEditMode}">Edit</button>
 		</div>
 	{/if}

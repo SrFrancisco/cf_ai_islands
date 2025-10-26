@@ -10,6 +10,7 @@ export type islandsRow = {
     island_name: string // TEXT PRIMARY KEY
     island_topology: string | undefined // TEXT
     island_decorations: string | undefined // TEXT
+    seed: number | undefined // INT
     island_profile: string | undefined // TEXT
     stat_used_tokens: number | undefined // TEXT
     "COUNT(*)":number

@@ -27,7 +27,7 @@ export const POST: RequestHandler = async ({request,platform}) => {
         return json({ status: 400, body: "There is an island with that name!" });
 
     const create_stmt = platform!.env.islands_db.prepare(
-        "INSERT INTO islands VALUES (?,NULL,NULL,NULL,NULL);").bind(safe_island_name);
+        "INSERT INTO islands VALUES (?,NULL,NULL,?,NULL,NULL);").bind(safe_island_name,Math.floor(Math.random()*100));
     const returnValueCreate = await create_stmt.run<islandsRow>();
     if(returnValueCreate.error)
         throw new Error(); //TODO

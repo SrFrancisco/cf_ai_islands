@@ -15,6 +15,10 @@
 
 <div style="margin-top: 30px;">
   <h3>Islands</h3>
+  {#if data.islands?.length == 0}
+    <span>(🏝️ No island found)</span>
+  {/if}
+
   {#each data.islands as island}
 
   <div style="display: inline-block; background-color: azure;

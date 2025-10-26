@@ -340,7 +340,7 @@ const resize = () => {
     animate();
 };
 
-export const createScene = (el:HTMLCanvasElement,profile:ISLAND_PROFILE=DEFAULT_PROFILE) => {
+export const createScene = (el:HTMLCanvasElement,seed:number=10,profile:ISLAND_PROFILE=DEFAULT_PROFILE) => {
 	renderer = new THREE.WebGLRenderer({ antialias: false, canvas: el });
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.NoToneMapping;
@@ -349,7 +349,7 @@ export const createScene = (el:HTMLCanvasElement,profile:ISLAND_PROFILE=DEFAULT_
   //renderer.setSize(window.innerWidth, window.innerHeight);
 
   island = new Island(gridSize);
-  island.generateBaseTerrain(10,profile);
+  island.generateBaseTerrain(seed,profile);
   setup_island(island);
 
   if(aside) el.setAttribute('style', 'float: right;');
