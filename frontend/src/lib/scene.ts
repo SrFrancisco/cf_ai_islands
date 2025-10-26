@@ -19,9 +19,7 @@ async function loadTexture(url: string) {
   const tex = await loader.loadAsync(url);
 
   tex.colorSpace = THREE.SRGBColorSpace;
-  tex.generateMipmaps = false;
-  tex.minFilter = THREE.NearestFilter;
-  tex.magFilter = THREE.NearestFilter;
+  tex.generateMipmaps = true;
   tex.wrapS = tex.wrapT = THREE.ClampToEdgeWrapping;
   tex.premultiplyAlpha = false;
   tex.needsUpdate = true;
@@ -205,6 +203,7 @@ const render_island = (island:Island,profile:ISLAND_PROFILE=DEFAULT_PROFILE) => 
          || rgbToColor(terrain_color[y][x]).getHexString() == rgbToColor({r: 254, g: 254, b: 254}).getHexString()){
             objMeshes[OBJS_TYPES.Mountain].setMatrixAt(i, dummy.matrix);
             objMeshes[OBJS_TYPES.Mountain].instanceMatrix.needsUpdate = true
+            terrainMesh.setColorAt(i, new THREE.Color().setHex(0xbbc7c6));
       }
 
       i++;
