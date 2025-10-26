@@ -1,4 +1,4 @@
-import { Island, OBJS_TYPES, type rgb, type DecoratedObj } from '@project/common';
+import { Island, OBJS_TYPES, type rgb, type DecoratedObj, type ISLAND_PROFILE, DEFAULT_PROFILE } from '@project/common';
 import * as THREE from 'three'
 
 // CONFIGURATION -------------------
@@ -340,7 +340,7 @@ const resize = () => {
     animate();
 };
 
-export const createScene = (el:HTMLCanvasElement) => {
+export const createScene = (el:HTMLCanvasElement,profile:ISLAND_PROFILE=DEFAULT_PROFILE) => {
 	renderer = new THREE.WebGLRenderer({ antialias: false, canvas: el });
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.NoToneMapping;
@@ -349,7 +349,7 @@ export const createScene = (el:HTMLCanvasElement) => {
   //renderer.setSize(window.innerWidth, window.innerHeight);
 
   island = new Island(gridSize);
-  island.generateBaseTerrain();
+  island.generateBaseTerrain(10,profile);
   setup_island(island);
 
   if(aside) el.setAttribute('style', 'float: right;');
@@ -367,6 +367,12 @@ export const new_island = () => {
 export const new_island_map = (topo:Array<Array<number>>, objs:Array<DecoratedObj>) => {
   island = new Island(gridSize,topo,objs);
   island.generateBaseTerrain();
+  render_island(island);
+  animate();
+}
+export const new_island_profile = (profile:ISLAND_PROFILE) => {
+  console.log("new_island_profile",profile);
+  island.generateBaseTerrain(10, profile);
   render_island(island);
   animate();
 }

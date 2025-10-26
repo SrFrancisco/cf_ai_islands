@@ -14,5 +14,5 @@ export const GET: RequestHandler = (async ({url,request,platform}) => {
     if(returnValue.error || returnValue.results.length != 1) 
         throw new Error();
     const st = returnValue.results!.at(0)!;
-    return json(JSON.stringify(st),{status: 200})
+    return json(st,{status: 200})
 }) satisfies RequestHandler;

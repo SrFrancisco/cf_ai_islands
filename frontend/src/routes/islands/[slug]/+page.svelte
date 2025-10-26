@@ -32,6 +32,7 @@
 	}
 
 	.bot {
+		float: right;
 		background-color: #fff;
 		align-self: flex-start; /* pushes to the left */
 	}
@@ -41,11 +42,11 @@
 <script lang="ts">
     // this code is based on the Svelte+Three.js scaffold (https://github.com/jasonsturges/threejs-sveltekit)
     import { onMount } from 'svelte';
-	import { createScene, new_island, new_island_map } from '$lib/scene';
+	import { createScene, new_island, new_island_map, new_island_profile } from '$lib/scene';
 	import type { PageProps } from './$types';
 	import { goto } from '$app/navigation';
-    import type { inferenceRequest, inferenceResponse } from '@project/common/api';
-
+    import type { inferenceRequest, inferenceResponse, Prompt } from '@project/common/api';
+    import type { ISLAND_PROFILE } from '@project/common';
 	let { data }: PageProps = $props();
 	if(data.island_data == null)
 	{
@@ -58,23 +59,31 @@
 	let ai_topology = $state(true);
 	const toggleEditMode = () => {edit_mode = true; console.log("UPDATE");}
 	let ai_prompt_text:string = $state("");
-	let previous_prompts:Array<string> = $state([]);
+	let previous_prompts:Array<Prompt> = $state([]);
 	let ai_in_processing = $state(false);
 
 	let el:HTMLCanvasElement;
 	onMount(() => {
-		createScene(el);
+		if(data.island_data!.island_profile == null)
+		{	
+			console.log("Using default profile!");
+			createScene(el);
+		} else createScene(el,(JSON.parse(data.island_data!.island_profile) as ISLAND_PROFILE));
 	});
 
 
 	const ai_prompt = async () => {
+
 		ai_in_processing = true;
 		chat_mode = true;
-		previous_prompts.push(ai_prompt_text);
+		previous_prompts.push({
+			role: "user",
+			content: ai_prompt_text});
 		
 		const req:inferenceRequest = {
 			island_name: data.slug,
-			prompt: previous_prompts
+			prompts: previous_prompts,
+			generate_topo: ai_topology
 		}
 
 		ai_prompt_text = "";
@@ -86,15 +95,20 @@
 			},
 			body: JSON.stringify(req)
 		});
-
+		
 		if(!response.ok) {
 			alert("There was an error with the inference engine! Try again later");
 			ai_in_processing = false;
 			return;
 		}
 
-		const island_data = await response.json<inferenceResponse>();
-		new_island_map(island_data.map,island_data.objs);
+		const profile = await response.json<inferenceResponse>();
+		new_island_profile(profile.profile);
+
+		previous_prompts.push({
+			role: "assistant",
+			content: JSON.stringify(profile)});
+
 		ai_in_processing = false;
 		
 	}
@@ -136,15 +150,30 @@
 				<li>Datacenter</li>
 			</ul>
 		{:else}
-			<div style="float: right; list-style-type: none; float: right; display: flex; gap: 10px; list-style: none; padding: 0; margin: 0;">
-				<ul style="list-style-type: none; margin-bottom: 20px;" class="chat">
+			<div bind:this={chatWrapper} style="float: right; list-style-type: none; float: right; width:100%; gap: 10px; list-style: none; padding: 0; margin: 0; width: 100%;
+    			max-height: 700px;overflow-y: auto;overflow-x: hidden;display: flex;flex-direction: column;justify-content: flex-end;gap: 10px;padding: 10px;box-sizing: border-box;">
+				<div style="list-style-type: none; margin-bottom: 20px; overflow-y: auto;" class="chat">
 				{#each previous_prompts as chat_msg}
-					<li class="user bubble"><div>{chat_msg}</div></li>
+					{#if chat_msg.role == "assistant"}
+						<div class="bot bubble"><div>Done!</div></div>
+					{:else}
+						<div class="user bubble"><div>{chat_msg.content}</div></div>
+					{/if}
 				{/each}
-				</ul>
+				</div>
 			</div>
 		{/if}
+		
 		<div class="input-group mb-3">
+			{#if ai_in_processing}
+				<div style="display: flex; align-items:center; gap: 10px; margin-bottom: 10px; width: 100%;">
+					<div class="spinner-border" role="status" >
+						<span class="sr-only"></span>
+					</div>
+					
+					<span>Loading, this may take a few seconds...</span>
+				</div>
+			{/if}
 			<textarea class="form-control" placeholder="What would you like to include?" 
 				bind:value={ai_prompt_text} disabled="{ai_in_processing}" rows="1" onkeydown={(e) => {if(e.key == 'Enter'){ e.preventDefault(); ai_prompt();}}}></textarea>
 			<button disabled="{ai_in_processing}" class="btn btn-primary" type="button" id="button-addon2" onclick="{ai_prompt}">Generate</button>

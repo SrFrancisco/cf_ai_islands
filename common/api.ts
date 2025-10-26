@@ -1,4 +1,4 @@
-import { DecoratedObj } from "./islands";
+import { DecoratedObj, ISLAND_PROFILE } from "./islands";
 
 export type InferenceReqPayload = {
     island_uuid: string,
@@ -8,17 +8,30 @@ export type InferenceReqPayload = {
 
 export type islandsRow = {
     island_name: string // TEXT PRIMARY KEY
-    island_topology: string // TEXT
-    island_decorations: string // TEXT
+    island_topology: string | undefined // TEXT
+    island_decorations: string | undefined // TEXT
+    island_profile: string | undefined // TEXT
+    stat_used_tokens: number | undefined // TEXT
     "COUNT(*)":number
 };
 
+export type Prompt = {
+    role: string,
+    content: string
+}
 export type inferenceRequest = {
     island_name: string,
-    prompt: Array<string>,
+    prompts: Array<Prompt>,
+    generate_topo: boolean
 }
 
 export type inferenceResponse = {
-    map:Array<Array<number>>,
-    objs:Array<DecoratedObj>
+    //map:Array<Array<number>>,
+    //objs:Array<DecoratedObj>
+    profile: ISLAND_PROFILE,
+    used_tokens: number
+}
+
+export type getIslandsResponse = {
+    island_names:Array<string>
 }

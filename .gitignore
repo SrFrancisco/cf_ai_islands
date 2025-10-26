@@ -28,3 +28,5 @@ vite.config.ts.timestamp-*
 
 *.d.ts
 **/wrangler.jsonc
+
+db/*

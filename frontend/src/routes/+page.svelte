@@ -1,27 +1,40 @@
-<script>
+<script lang="ts">
     import 'bootstrap/dist/css/bootstrap.min.css';
     import 'bootstrap/dist/js/bootstrap.min.js';
+    import type { PageProps } from './$types';
+
+    let {data} : PageProps = $props();
 </script>
 
 <div style="text-align: center; display: flex; align-items: center; justify-content: center; width: 100%; height: 100%;">
 
-<div style="">
+<div style="margin-top: 2em">
 <h1>Welcome to Islands!</h1>
 
-<div>
-    <a class="btn" href="/islands">Create a new Island</a>
-</div>
-<div>
-    <a class="btn">Edit my island</a>
-</div>
-
-</div>  
-</div>
-
-
-
-
 <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal" data-bs-whatever="@mdo">New Island</button>
+
+<div style="margin-top: 30px;">
+  <h3>Islands</h3>
+  {#each data.islands as island}
+
+  <div style="display: inline-block; background-color: azure;
+  border: 2px solid #56c8ff;
+  border-radius: 5px; margin: 5px;">
+    
+    <a href="/islands/{island}" style="text-decoration: none; color: black; padding: 5px 10px; margin: 5px; ">
+      <span style="font-size: 2em;">🏝️</span> {island}</a>
+  </div>
+
+  {/each}
+</div>
+
+
+</div>
+</div>
+
+
+
+
 
 <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
   <div class="modal-dialog">
