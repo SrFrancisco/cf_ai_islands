@@ -309,6 +309,10 @@ export const createScene = (el:HTMLCanvasElement,seed:number=10,profile:ISLAND_P
   renderer.toneMapping = THREE.NoToneMapping;
   renderer.setPixelRatio(window.devicePixelRatio);
   renderer.sortObjects = false;
+
+  //REF: https://stackoverflow.com/a/48722282
+  scene.remove.apply(scene, scene.children); // We may need to clean the scene if the user
+                                             // opens another island in the same window
   //renderer.setSize(window.innerWidth, window.innerHeight);
 
   island = new Island(gridSize);
