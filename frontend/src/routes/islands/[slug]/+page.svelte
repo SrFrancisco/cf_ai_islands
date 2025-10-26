@@ -147,6 +147,7 @@
 				<li>Percentage of each biome (snow, mountain, plain, sand, water and deep water)</li>
 				<li>Percentage of trees in plain biome</li>
 			</ul>
+			<p>As of right now, the LLM can only change the terrain generation parameters. This means it cannot place objects, such as trees, in a specific position.</p>
 		{:else}
 			<div style="float: right; list-style-type: none; float: right; width:100%; gap: 10px; list-style: none; padding: 0; margin: 0; width: 100%;
     			max-height: 700px;overflow-y: auto;overflow-x: hidden;display: flex;flex-direction: column;justify-content: flex-end;gap: 10px;padding: 10px;box-sizing: border-box;">
