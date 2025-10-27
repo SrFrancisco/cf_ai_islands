@@ -3,18 +3,20 @@ Use LLMs to procedurally-generate islands with natural language.
 
 
 ## Concept
-This project explores the idea of using AI for world building. Specifically, it allows a user to specify the characteristics of an island and attempts to change the parameters of a noise-based procedural terrain generator.
+This project explores the idea of using AI for world building. Specifically, it allows IA to modify parameters of a procedural terrain generator to correspond to a user's described characteristics.
 
-Users can create new islands and customize its appearance by prompting an LLM. The LLM receives a description of each available parameter and its effect on the island (noise frequency, biome delimiters, ...) along with a prompt. It then generates a set of configurations that modifies the noise functions according to the request. Finally, the configuration is passed to a terrain generator for rendering, allowing the user to see the results and request further modifications.
+Users can generate new islands and customize their appearance through prompts to a language model. These prompts may include, for example, adjusting biome distribution, altering island size and shape, or modifying mountain steepness. The LLM receives the request along a descriptions of each configurable terrain parameter and its effects. It then produces a set of configurations that are passed to a terrain generator for rendering, allowing users to visualize the results and request further refinements.
 
-The terrain generator uses Simplex Noise and it is based on the Red Blob Games' article about map generation (https://www.redblobgames.com/maps/terrain-from-noise/).
+The terrain generator used in this project uses Simplex Noise and it is based on the Red Blob Games' article about map generation (https://www.redblobgames.com/maps/terrain-from-noise/). 
 
 ## Architecture and Implementation
 This project is divided into three components:
 
-1. **Frontend**: Uses SvelteKit for the UI and Three.js for island rendering. Deployed on Cloudflare Pages.
-2. **Inference Engine**: A durable workflow that receives user prompts, processes them with an LLM, and returns configuration results to the frontend. It runs on Cloudflare Workflows and uses Workers AI with the llama-3-8b-instruct model.
-3. **Database**: A relational database that stores all islands. It uses Cloudflare D1.
+1. **Database**: A relational database that stores all islands. It uses Cloudflare D1.
+2. **Frontend**: Uses SvelteKit for the UI and Three.js for island rendering. It is deployed on Cloudflare Pages.
+3. **Inference Engine**: A durable workflow receives user prompts from the frontend, processes them using an LLM, and stores the resulting configurations in the database. It operates on Cloudflare Workflows and utilizes Workers AI with the llama-3-8b-instruct model.
+
+The components are interconnected through the use of [Service Bindings](https://developers.cloudflare.com/workers/runtime-apis/bindings/service-bindings/).
 
 ## Setup
 
@@ -59,21 +61,21 @@ This project is divided into three components:
 ### Local development
 
 > [!NOTE]
-> AI inference always uses cloud services even in local dev
+> AI inference always uses cloud services, even in local dev
 
 Follow steps 0. to 3. of the Deployment.
 
 4. Create a local db instance with
 
     ```
-    # either worklow/ or frontend/
+    # either worfklow/ or frontend/
     npx wrangler d1 execute islands-db --local --file=../db_schema.sql --persist-to ../db
     ```
 
 5. Run workflow locally
 
     ```
-    # in worklow/
+    # in worfklow/
     npx wrangler dev
     ```
 
