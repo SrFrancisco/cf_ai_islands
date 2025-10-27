@@ -5,7 +5,7 @@ Use LLMs to procedurally-generate islands with natural language.
 ## Concept
 This project explores the idea of using AI for world building. Specifically, it allows IA to modify parameters of a procedural terrain generator to correspond to a user's described characteristics.
 
-Users can generate new islands and customize their appearance through prompts to a language model. These prompts may include, for example, adjusting biome distribution, altering island size and shape, or modifying mountain steepness. The LLM receives the request along with a descriptions of each configurable parameter of the generator. It then produces a set of configurations that are passed to a terrain generator for rendering, allowing users to visualize the results and request further refinements.
+Users can generate new islands and customize their appearance through prompts to a language model. These prompts may include, for example, adjusting biome distribution, altering island size and shape, or modifying mountain steepness. The LLM receives the request along with a description of each configurable parameter of the generator. It then produces a set of configurations that are passed to a terrain generator for rendering, allowing users to visualize the results and request further refinements.
 
 The terrain generator used in this project uses Simplex Noise and it is based on the Red Blob Games' article about map generation (https://www.redblobgames.com/maps/terrain-from-noise/). 
 
